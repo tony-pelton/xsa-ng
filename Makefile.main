@@ -1,0 +1,20 @@
+CC   = g++
+OBJ  = fortify.o main.o
+LIBS =  -L /s/src/xplugin/XPSDK102/Libraries/Win/
+INCS =  -I /s/src/xplugin/XPSDK102/CHeaders/XPLM/
+BIN  = main.exe
+CFLAGS = -Wall -O2 $(INCS) -s -D IBM -D FORTIFY=1
+
+all: $(BIN)
+
+clean:
+	rm -f $(OBJ) $(BIN)
+
+$(BIN): $(OBJ)
+	$(CC) $(OBJ) -o $(BIN) $(LIBS) -lXPLM -lglut32 -lopengl32 -lglu32
+
+main.o: main.cpp
+	$(CC) -c main.cpp -o main.o $(CFLAGS)
+
+fortify.o: fortify.cpp
+	$(CC) -c fortify.cpp -o fortify.o $(CFLAGS)

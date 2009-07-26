@@ -1,0 +1,22 @@
+CC   = g++
+OBJ  = xsa-ng.o
+# LIBS =  -L /home/tpelton/lib/xpsdk102
+INCS =  -I /home/tpelton/lib/xpsdk102/CHeaders/XPLM
+BIN  = linXSA-ng.xpl
+CFLAGS = -Wall -O2 -fPIC $(INCS) -s -D LIN
+INSTALL_DIR = "/home/tpelton/X-Plane 8.50/Resources/plugins"
+
+all: $(BIN)
+
+clean:
+	rm -f $(OBJ) $(BIN)
+	rm -f $(INSTALL_DIR)/$(BIN)
+
+install:
+	cp $(BIN) $(INSTALL_DIR)
+
+$(BIN): $(OBJ)
+	$(CC) -shared -Wl,-soname,$(BIN) $(OBJ) -o $(BIN) $(LIBS) $(CFLAGS)
+
+xsa-ng.o: xsa-ng.cxx
+	$(CC) -c xsa-ng.cxx -o xsa-ng.o $(CFLAGS)

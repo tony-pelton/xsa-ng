@@ -10,45 +10,23 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class XDataImport extends XDataBase {
-	
-	
-    public static void main(String[] args) throws Exception {
-		importData();		
-    }
-	
-	private static void importData() throws Exception {
 
-		/*
-create table nationaldata (
-id int NOT NULL GENERATED ALWAYS AS IDENTITY,
-featureid int,
-featurename varchar(255),
-class varchar(30),
-st_alpha varchar(30),
-st_num int,
-county varchar(30),
-county_num int,
-lat numeric(10,6),
-lon numeric(10,6),
-s_lat numeric(10,6),
-s_lon numeric(10,6),
-height numeric,
-map_name varchar(30)
-);
-		 */
+	public static void main(String[] args) throws Exception {
+		importData(args[0]);
+	}
+	
+	private static void importData(String file) throws Exception {
 
 		final String insert_usgs = "insert into nationaldata (featureid,featurename,class,st_alpha,st_num,county,county_num,lat,lon,s_lat,s_lon,height,map_name) values (?,?,?,?,?,?,?,?,?,?,?,?,?)";
 		
-		Connection c = getConnection();
+		Connection c = getConnection(file);
 		
 		PreparedStatement stmt = c.prepareStatement(insert_usgs);
 		
-		File fInData = new File("/gnisdata/NationalFile_combined.csv");
+		File fInData = new File(file);
 		FileReader fReader = new FileReader(fInData);
 		BufferedReader reader = new BufferedReader(fReader);
-		reader.readLine();		
-
-//		Map<String,Boolean> unmappedClass = new HashMap<String,Boolean>();
+		reader.readLine();
 		
 		boolean loop = true;
 		int pointsProcessed = 0;
@@ -65,26 +43,6 @@ map_name varchar(30)
 			
 			StringBuilder row = new StringBuilder(1024);
 			String[] values = data.split("\t");
-			
-	/*
-0 [Feature_ID]
-0 [Feature_Name]
-0 [Class]
-0 [ST_alpha]
-0 [ST_num]
-0 [County]
-0 [County_num]
-0 [Primary_lat_DMS]
-0 [Primary_lon_DMS]
-0 [Primary_lat_dec]
-0 [Primary_lon_dec]
-0 [Source_lat_DMS]
-0 [Source_lon_DMS]
-0 [Source_lat_dec]
-0 [Source_lon_dec]
-0 [Elev(Meters)]
-0 [Map_Name]
-	 */
 
 			Integer featureId = new Integer(values[0]);
 			String pointName = values[1];
@@ -158,8 +116,6 @@ map_name varchar(30)
 			if(pointsKept % 2000 == 0) {
 				c.commit();
 			}
-			
-//			if(pointsKept > 20000) { loop = false; }
 		}
 		
 		c.commit();

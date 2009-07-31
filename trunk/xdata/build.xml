@@ -28,16 +28,41 @@
     <javac srcdir="${src}" destdir="${build}"/>
   </target>
 
-	<target name="download" depends="init" description="fetch USGS data">
+	<target name="data-get" depends="init" description="get USGS data">
 		<!-- http://geonames.usgs.gov/domestic/download_data.htm -->
-		<get src="http://geonames.usgs.gov/docs/stategaz/NationalFile_20090601.zip" dest="${datadir}/NationalFile.zip" verbose="on"/>
-		<unzip src="${datadir}/NationalFile.zip" dest="${datadir}"/>
+		<get src="http://geonames.usgs.gov/docs/stategaz/NationalFile_20090601.zip" dest="${usgsdatadir}/NationalFile.zip" verbose="on"/>
 	</target>
+
+	<target name="data-unzip" depends="init" description="unzip USGS data">
+		<unzip src="${usgsdatadir}/NationalFile.zip" dest="${usgsdatadir}"/>
+	</target>
+
+	<target name="data-concat" depends="init" description="concat USGS data file">
+		<delete file="${usgsdatadir}/NationalFile_combined.csv"/>
+
+		<concat destfile="${usgsdatadir}/NationalFile_combined.csv">
+			<first>
+				<fileset dir="${usgsdatadir}" includes="*.txt"/>
+			</first>
+			<filterchain>
+				<headfilter lines="1"/>
+			</filterchain>
+		</concat>
+
+		<concat destfile="${usgsdatadir}/NationalFile_combined.csv">
+			<fileset dir="${usgsdatadir}" includes="*.txt"/>
+			<filterchain>
+				<headfilter lines="1"/>
+			</filterchain>
+		</concat>
+
+	</target>
+
+	<target name="download" depends="init,data-get,data-unzip,data-concat" description="process USGS data"/>
 
 	<target name="db-load" depends="init,compile" description="load USGS data">
 		<java classname="com.dsrts.xdata.XDataImport" classpathref="path.build">
-			<args>
-			</args>
+			<arg value="${usgsdatadir}/NationalFile_combined.csv"/>
 		</java>
 	</target>
 
@@ -68,15 +93,21 @@
 				height int,
 				map_name varchar(128)
 				);
-				]]>
-				<![CDATA[
+				grant all on nationaldata to public;
 				create index idx_st_alpha on nationaldata(st_alpha);
 				create index idx_lat on nationaldata(lat);
 				create index idx_lon on nationaldata(lon);
 				create index idx_featureid on nationaldata(featureid);
 				]]>
-</sql>
+		</sql>
+	</target>
 
+	<target name="db-admin" depends="init" description="admin">
+		<java classname="org.hsqldb.util.DatabaseManagerSwing" classpathref="path.build">
+			<!--
+			<arg value="${usgsdatadir}/NationalFile_combined.csv"/>
+			-->
+		</java>
 	</target>
 
   <target name="dist" depends="compile" description="generate the distribution" >

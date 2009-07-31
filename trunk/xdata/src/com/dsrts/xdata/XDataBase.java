@@ -15,9 +15,9 @@ import java.sql.SQLException;
  */
 public class XDataBase {
 	static boolean load_driver = true;
-	static Connection getConnection() throws ClassNotFoundException, SQLException {
-		if(load_driver) { Class.forName("org.apache.derby.jdbc.ClientDriver"); load_driver = false; }
-		Connection c = DriverManager.getConnection("jdbc:derby://localhost:1527/data/xdata","admin","admin");
+	static Connection getConnection(String file) throws ClassNotFoundException, SQLException {
+		if(load_driver) { Class.forName("org.hsqldb.jdbcDriver"); load_driver = false; }
+		Connection c = DriverManager.getConnection("jdbc:hsqldb:file:" + file, "sa", "");
 		c.setAutoCommit(false);
 		return c;
 	}

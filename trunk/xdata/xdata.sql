@@ -16,21 +16,16 @@ map_name varchar(128)
 );
 
 create index idx_st_alpha on nationaldata(st_alpha)
-
 create index idx_lat on nationaldata(lat)
-
 create index idx_lon on nationaldata(lon)
-
 create index idx_featureid on nationaldata(featureid)
 
 call SYSCS_UTIL.SYSCS_COMPRESS_TABLE('ADMIN', 'NATIONALDATA', 0)
 
 drop table outdata
-
 create table outdata as select * from nationaldata with no data
 
 drop view data_v
-
 create view data_v (id,featureid,featurename,class,st_alpha,st_num,county,county_num,lat,lon,s_lat,s_lon,height,map_name,pri_good,src_good) as
  select id,featureid,featurename,class,st_alpha,st_num,county,county_num,lat,lon,s_lat,s_lon,height,map_name,
  case when height is null then 0 when height < 0 then 0 when lat = 0 then 0 when lat is null then 0 when lon = 0 then 0 when lon is null then 0 else 1 end as pri_good,
@@ -38,12 +33,8 @@ create view data_v (id,featureid,featurename,class,st_alpha,st_num,county,county
  from nationaldata
 
 drop table latlon
-
 create table latlon as select id,featureid,class,trim(char(lat))||'|'||trim(char(lon)) as latlon from nationaldata with no data
-
 insert into latlon select id,featureid,class,trim(char(lat))||'|'||trim(char(lon)) as latlon from nationaldata
-
--- END DDL
 
 delete from outdata
 

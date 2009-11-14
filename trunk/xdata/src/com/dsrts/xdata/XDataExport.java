@@ -92,8 +92,8 @@ public class XDataExport extends XDataBase {
 //		mapTypeToClass.put("CHANNEL", TYPE_CIVIL);
 	}
 	
-	public static void main(String argv[]) throws ClassNotFoundException, SQLException, IOException {		
-		exportData();		
+	public static void main(String args[]) throws ClassNotFoundException, SQLException, IOException {
+		exportData();
 	}
 	
 	private static void exportData() throws ClassNotFoundException, SQLException, IOException {
@@ -108,8 +108,8 @@ public class XDataExport extends XDataBase {
 		
 		// layer|lat|lon|height|type|id|name
 		// final String insert_usgs = "select lat,lon,height,class,featurename from data_v where st_alpha = 'HI' and pri_good = 1";
-		final String select_usgs = "select lat,lon,height,class,featurename from data_v where pri_good = 1 order by lat,lon";
-		Connection c = getConnection();		
+		final String select_usgs = "select lat,lon,height,class,featurename from nationaldata";
+		Connection c = getConnection();
 		Statement stmt = c.createStatement();		
 		ResultSet rs = stmt.executeQuery(select_usgs);
 		

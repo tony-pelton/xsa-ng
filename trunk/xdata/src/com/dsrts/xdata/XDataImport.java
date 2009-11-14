@@ -5,9 +5,9 @@ import java.io.File;
 import java.io.FileReader;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.Statement;
 import java.sql.Types;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.Date;
 
 public class XDataImport extends XDataBase {
 
@@ -19,7 +19,13 @@ public class XDataImport extends XDataBase {
 
 		final String insert_usgs = "insert into nationaldata (featureid,featurename,class,st_alpha,st_num,county,county_num,lat,lon,s_lat,s_lon,height,map_name) values (?,?,?,?,?,?,?,?,?,?,?,?,?)";
 		
-		Connection c = getConnection(file);
+		Connection c = getConnection();
+
+		{
+			Statement stmt = c.createStatement();
+			stmt.execute("delete from nationaldata");
+			stmt.close();
+		}
 		
 		PreparedStatement stmt = c.prepareStatement(insert_usgs);
 		
@@ -42,7 +48,7 @@ public class XDataImport extends XDataBase {
 			pointsProcessed++;
 			
 			StringBuilder row = new StringBuilder(1024);
-			String[] values = data.split("\t");
+			String[] values = data.split("[|]");
 
 			Integer featureId = new Integer(values[0]);
 			String pointName = values[1];
@@ -50,21 +56,27 @@ public class XDataImport extends XDataBase {
 			String st_alpha = values[3];
 			Integer st_num = new Integer(values[4]);
 			String county = values[5];
-			Integer county_num = new Integer(values[6]);
+
+			Integer county_num = null;
+			try {
+				county_num = new Integer(values[6]);
+			} catch (Exception e) {
+				county_num = -1;
+			}
 			
 			String s_pointLat = values[9];
 			Double pointLat = null;
 			try {
 				pointLat = new Double(s_pointLat);
 			} catch (Exception e) {
-				; // nothing
+				continue;
 			}
 			String s_pointLon = values[10];
 			Double pointLon = null;
 			try {
 				pointLon = new Double(s_pointLon);
 			} catch (Exception e) {
-				; // nothing
+				continue;
 			}
 			
 			String s_pointSourceLat = values[13];
@@ -72,14 +84,14 @@ public class XDataImport extends XDataBase {
 			try {
 				pointSourceLat = new Double(s_pointSourceLat);
 			} catch (Exception e) {
-				; // nothing
+				;
 			}
 			String s_pointSourceLon = values[14];
 			Double pointSourceLon = null;
 			try {
 				pointSourceLon = new Double(s_pointSourceLon);
 			} catch (Exception e) {
-				; // nothing
+				;
 			}
 
 			String s_height = values[15];
@@ -87,7 +99,7 @@ public class XDataImport extends XDataBase {
 			try {
 				height = new Integer(s_height);
 			} catch (Exception e) {
-				; // nothing
+				continue;
 			}
 			
 			String mapName = values[16];
@@ -114,6 +126,7 @@ public class XDataImport extends XDataBase {
 			pointsKept++;
 			
 			if(pointsKept % 2000 == 0) {
+				System.out.println("processed 2000 @ " + new Date());
 				c.commit();
 			}
 		}
@@ -124,7 +137,7 @@ public class XDataImport extends XDataBase {
 		
 //		System.out.println("class types dropped : " + unmappedClass.keySet());
 		System.out.println("points processed : " + pointsProcessed);
-//		System.out.println("points kept : " + pointsKept);
+		System.out.println("points kept : " + pointsKept);
 		
 	}	
 }

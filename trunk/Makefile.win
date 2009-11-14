@@ -25,7 +25,7 @@ install:
 $(BIN): $(OBJ)
 	# dllwrap -v --mno-cygwin --driver-name=$(CC) --dllname=$(BIN) $(OBJ) $(LIBS) -lXPLM -lopengl32
 	$(CC) -shared -o $(BIN) -Wl,--out-implib,$(BIN) $(OBJ) $(LIBS) -lXPLM -lopengl32
-	strip $(BIN)
+	# strip $(BIN)
 
 xsa-ng.o: xsa-ng.cpp
 	$(CC) -c xsa-ng.cpp -o xsa-ng.o $(CFLAGS)

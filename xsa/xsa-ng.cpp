@@ -20,13 +20,19 @@
 
 #define XSA_NAUTICAL_MILE_METERS 1852
 
+#define DETAILS_DRAW_NAME 1
+#define DETAILS_DRAW_ID 2
+#define DETAILS_DRAW_DISTANCE 4
+
 XPLMHotKeyID details_hot_key_id = NULL;
 XPLMHotKeyID toggle_hot_key_id = NULL;
 
 XPLMMenuID menu_root = NULL;
 int menu_root_idx = 0;
 
-int menu_drawprint_idx = 0;
+int menu_drawname_idx = 0;
+int menu_drawdistance_idx = 0;
+int menu_drawid_idx = 0;
 int menu_fix_idx = 0;
 int menu_airport_idx = 0;
 int menu_navaid_idx = 0;
@@ -62,9 +68,7 @@ int list_count = 0;
 bool debug_dump = false;
 
 int draw_flags = 0;
-
-bool draw_print = false;
-bool draw_state = false;
+int detail_draw_flags = 0;
 
 float last_toggle = 0.0;
 
@@ -73,7 +77,6 @@ void XSAUpdateState();
 void XSADrawState();
 int XSADraw(XPLMDrawingPhase inPhase,int inIsBefore,void* inRefcon);
 void XSADrawString(d_XSA3DPoint translate,double scale,const unsigned char* string);
-void toggleDetail();
 void toggleType();
 void key(void* inRefCon);
 void XSAMenuHandler(void*,void*);
@@ -106,14 +109,6 @@ void XSAUpdateState() {
 	psi = XPLMGetDataf(dr_Psi);
 	
 	running_time_secs = XPLMGetDataf(dr_RunningTime);
-
-	/*
-	if(last_toggle+5.0 > running_time_secs) {
-		draw_state = true;
-	} else {
-		draw_state = false;
-	}
-	 */
 
 	XPLMSetGraphicsState(0, 0, 0, 0, 0, 1, 1);
 }
@@ -149,8 +144,8 @@ void XSADrawState() {
 			break;			
 	}
 	
-	if(draw_print && !(draw_flags == xsaNavTypeFix)) {
-		strcat(buf," (w/ Names)");
+	if(detail_draw_flags != 0 && !(draw_flags == xsaNavTypeFix)) {
+		strcat(buf," (w/ Details)");
 	}
 	
 	int length = glutStrokeLength(GLUT_STROKE_MONO_ROMAN,(unsigned char*)&buf);
@@ -296,20 +291,30 @@ void XSADrawNav() {
 
 		XSARenderShapeDiamond(gl_point.x,gl_point.y+16.0,gl_point.z);
 
-		if(ptr_nav->xsaType != xsaNavTypeFix && draw_print && !draw_state) {
+		if(ptr_nav->xsaType != xsaNavTypeFix && detail_draw_flags != 0) {
 			// nav name,nav id,frequency,distance etc ...
 			static char* buf = (char*) malloc(1024*sizeof(unsigned char));
 			memset(buf,0,1024*sizeof(unsigned char));
 			// scratch
-			static char* bufbuf = (char*) malloc(256*sizeof(char));
-			memset(bufbuf,0,256*sizeof(char));
-
-			strcpy(buf,ptr_nav->name);
-			
-			strcat(buf," (");
-			sprintf(bufbuf,"%.1f",range);
-			strcat(buf,bufbuf);
-			strcat(buf,")");
+			static char* bufbuf = (char*) malloc(5*sizeof(char));
+      
+      if((detail_draw_flags & DETAILS_DRAW_NAME) == DETAILS_DRAW_NAME) {
+          strcat(buf,ptr_nav->name);
+      }
+      
+      if((detail_draw_flags & DETAILS_DRAW_ID) == DETAILS_DRAW_ID) {
+          if(strlen(buf) > 0) { strcat(buf," "); }
+          strcat(buf,ptr_nav->id);
+      }
+      
+      if((detail_draw_flags & DETAILS_DRAW_DISTANCE) == DETAILS_DRAW_DISTANCE) {
+          if(strlen(buf) > 0) { strcat(buf," "); }          
+          strcat(buf,"(");
+          memset(bufbuf,0,5*sizeof(char));
+          sprintf(bufbuf,"%.1f",range);
+          strcat(buf,bufbuf);
+          strcat(buf,")");
+      }
 
 			double nav_scale_factor = range*0.15;
 			if(nav_scale_factor < 0.08) { nav_scale_factor = 0.08; }
@@ -338,7 +343,7 @@ void XSADrawString(d_XSA3DPoint translate,double scale,const unsigned char* stri
 PLUGIN_API int XPluginStart(char* outName,char* outSig,char* outDesc) {
 	strcpy(outName, "xsa-ng");
 	strcpy(outSig, "com.dsrts.xsa-ng");
-	strcpy(outDesc, "XSA-NG v1.0 FINAL (tpelton@gmail.com) built : "__DATE__);
+	strcpy(outDesc, "XSA-NG v1.1 (tpelton@gmail.com) built : "__DATE__);
 	
 	dr_X = XPLMFindDataRef("sim/flightmodel/position/local_x");
 	dr_Y = XPLMFindDataRef("sim/flightmodel/position/local_y");
@@ -363,11 +368,17 @@ PLUGIN_API int XPluginStart(char* outName,char* outSig,char* outDesc) {
 	menu_root_idx = XPLMAppendMenuItem(XPLMFindPluginsMenu(),"XSA-NG",NULL,1);
 	menu_root = XPLMCreateMenu("XSA-NG",XPLMFindPluginsMenu(),menu_root_idx,XSAMenuHandler,NULL);
 
-	menu_drawprint_idx = XPLMAppendMenuItem(menu_root,"Draw Details",&menu_drawprint_idx,1);
-	XPLMCheckMenuItem(menu_root,menu_drawprint_idx,xplm_Menu_Unchecked);
-	//
+  menu_drawname_idx = XPLMAppendMenuItem(menu_root,"Details : Draw Name",&menu_drawname_idx,1);
+  XPLMCheckMenuItem(menu_root,menu_drawname_idx,xplm_Menu_Unchecked);
+  
+  menu_drawdistance_idx = XPLMAppendMenuItem(menu_root,"Details : Draw Distance",&menu_drawdistance_idx,1);
+  XPLMCheckMenuItem(menu_root,menu_drawdistance_idx,xplm_Menu_Unchecked);
+  
+  menu_drawid_idx = XPLMAppendMenuItem(menu_root,"Details : Draw ID",&menu_drawid_idx,1);
+	XPLMCheckMenuItem(menu_root,menu_drawid_idx,xplm_Menu_Unchecked);
+
 	XPLMAppendMenuSeparator(menu_root);	
-	//
+
 	menu_airport_idx = XPLMAppendMenuItem(menu_root,"Draw Airport",&menu_airport_idx,1);
 	XPLMCheckMenuItem(menu_root,menu_airport_idx,xplm_Menu_Unchecked);
 	menu_navaid_idx = XPLMAppendMenuItem(menu_root,"Draw NAVAID",&menu_navaid_idx,1);
@@ -400,71 +411,54 @@ PLUGIN_API void	XPluginStop(void) {}
 PLUGIN_API int XPluginEnable(void) { return 1; }
 PLUGIN_API void XPluginDisable(void) {}
 
+void menuHandlerMasks(int menu_idx,int* pflags,int MASK) {
+    int flags = *pflags;
+		if((flags & MASK) == MASK) {
+			XPLMCheckMenuItem(menu_root,menu_idx,xplm_Menu_Unchecked);
+		} else {
+			XPLMCheckMenuItem(menu_root,menu_idx,xplm_Menu_Checked);
+    }
+    *pflags = flags ^ MASK;
+}
+
 void XSAMenuHandler(void* inMenuRef,void* inItemRef) {
 
 	last_toggle = running_time_secs;
 	
-	if(inItemRef == &menu_drawprint_idx) {
-		if( draw_print ) {
-			XPLMCheckMenuItem(menu_root,menu_drawprint_idx,xplm_Menu_Unchecked);
-		} else {
-			XPLMCheckMenuItem(menu_root,menu_drawprint_idx,xplm_Menu_Checked);
-		}
-		toggleDetail();
+  if(inItemRef == &menu_drawname_idx) {
+      menuHandlerMasks(menu_drawname_idx,&detail_draw_flags,DETAILS_DRAW_NAME);
+	}
+  
+  if(inItemRef == &menu_drawdistance_idx) {
+      menuHandlerMasks(menu_drawdistance_idx,&detail_draw_flags,DETAILS_DRAW_DISTANCE);
+	}
+  
+  if(inItemRef == &menu_drawid_idx) {
+      menuHandlerMasks(menu_drawid_idx,&detail_draw_flags,DETAILS_DRAW_ID);
+	}
+  
+  if(inItemRef == &menu_airport_idx) {
+      menuHandlerMasks(menu_airport_idx,&draw_flags,xsaNavTypeAirport);
 	}
 	
-	if(inItemRef == &menu_airport_idx) {
-		if( (draw_flags & xsaNavTypeAirport) == xsaNavTypeAirport ) {
-			XPLMCheckMenuItem(menu_root,menu_airport_idx,xplm_Menu_Unchecked);
-		} else {
-			XPLMCheckMenuItem(menu_root,menu_airport_idx,xplm_Menu_Checked);
-		}
-		draw_flags = draw_flags ^ xsaNavTypeAirport;
+  if(inItemRef == &menu_navaid_idx) {
+      menuHandlerMasks(menu_navaid_idx,&draw_flags,xsaNavTypeVOR);      
 	}
 	
-	if(inItemRef == &menu_navaid_idx) {
-		if( (draw_flags & xsaNavTypeVOR) == xsaNavTypeVOR ) {
-			XPLMCheckMenuItem(menu_root,menu_navaid_idx,xplm_Menu_Unchecked);
-		} else {
-			XPLMCheckMenuItem(menu_root,menu_navaid_idx,xplm_Menu_Checked);
-		}
-		draw_flags = draw_flags ^ xsaNavTypeVOR;
+  if(inItemRef == &menu_fix_idx) {
+      menuHandlerMasks(menu_fix_idx,&draw_flags,xsaNavTypeFix);      
 	}
 	
-	if(inItemRef == &menu_fix_idx) {
-		if( (draw_flags & xsaNavTypeFix) == xsaNavTypeFix ) {
-			XPLMCheckMenuItem(menu_root,menu_fix_idx,xplm_Menu_Unchecked);
-		} else {
-			XPLMCheckMenuItem(menu_root,menu_fix_idx,xplm_Menu_Checked);
-		}
-		draw_flags = draw_flags ^ xsaNavTypeFix;
+  if(inItemRef == &menu_municipal_idx) {
+      menuHandlerMasks(menu_municipal_idx,&draw_flags,xsaNavTypeUSGSMunicipal);      
 	}
 	
-	if(inItemRef == &menu_municipal_idx) {
-		if( (draw_flags & xsaNavTypeUSGSMunicipal) == xsaNavTypeUSGSMunicipal ) {
-			XPLMCheckMenuItem(menu_root,menu_municipal_idx,xplm_Menu_Unchecked);
-		} else {
-			XPLMCheckMenuItem(menu_root,menu_municipal_idx,xplm_Menu_Checked);
-		}
-		draw_flags = draw_flags ^ xsaNavTypeUSGSMunicipal;
-	}
-	
-	if(inItemRef == &menu_civil_idx) {
-		if( (draw_flags & xsaNavTypeUSGSCivil) == xsaNavTypeUSGSCivil ) {
-			XPLMCheckMenuItem(menu_root,menu_civil_idx,xplm_Menu_Unchecked);
-		} else {
-			XPLMCheckMenuItem(menu_root,menu_civil_idx,xplm_Menu_Checked);
-		}
-		draw_flags = draw_flags ^ xsaNavTypeUSGSCivil;
+  if(inItemRef == &menu_civil_idx) {
+      menuHandlerMasks(menu_civil_idx,&draw_flags,xsaNavTypeUSGSCivil);      
 	}
 
-	if(inItemRef == &menu_terrain_idx) {
-		if( (draw_flags & xsaNavTypeUSGSTerrain) == xsaNavTypeUSGSTerrain ) {
-			XPLMCheckMenuItem(menu_root,menu_terrain_idx,xplm_Menu_Unchecked);
-		} else {
-			XPLMCheckMenuItem(menu_root,menu_terrain_idx,xplm_Menu_Checked);
-		}
-		draw_flags = draw_flags ^ xsaNavTypeUSGSTerrain;
+  if(inItemRef == &menu_terrain_idx) {
+      menuHandlerMasks(menu_terrain_idx,&draw_flags,xsaNavTypeUSGSTerrain);      
 	}
 
 }
@@ -478,11 +472,12 @@ void key(void* inRefCon) {
 		toggleDetail();
 	}
 	 */
-	/*
+    /*
 	if(inRefCon == &toggle_hot_key_id) {
 		toggleType();
-	}
-	 */
+    }
+    */
+
 }
 
 void toggleType() {
@@ -490,7 +485,7 @@ void toggleType() {
 	
 	switch(draw_flags) {
 		case 0:
-			draw_flags = 0|xsaNavTypeAirport;
+        draw_flags = 0|xsaNavTypeAirport;
 			break;
 			
 		case xsaNavTypeAirport:
@@ -516,15 +511,6 @@ void toggleType() {
 		default:
 			draw_flags = 0;
 	}	
-}
-
-void toggleDetail() {
-	last_toggle = running_time_secs;
-	if(draw_print) {
-		draw_print = false;
-	} else {
-		draw_print = true;
-	}
 }
 
 void dump() {

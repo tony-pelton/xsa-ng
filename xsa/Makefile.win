@@ -1,7 +1,7 @@
 CC   = g++
 OBJ  = xsa-ng.o xsa-ng-render.o xsa-nav.o fortify.o freeglut_font.o freeglut_stroke_mono_roman.o freeglut_stroke_roman.o
-LIBS = -L /src/xplugin/XPSDK102/Libraries/Win/
-INCS = -I /src/xplugin/XPSDK102/CHeaders/XPLM/
+LIBS = -L /llib/XPSDK102/Libraries/Win/
+INCS = -I /llib/XPSDK102/CHeaders/XPLM/
 BIN  = xsa-ng-win.xpl
 # CFLAGS = -Wall -O2 $(INCS) -s -D IBM -D FORTIFY
 CFLAGS = -Wall -O2 $(INCS) -s -D IBM=1 -D APL=0 -D LIN=0
@@ -9,7 +9,7 @@ CFLAGS = -Wall -O2 $(INCS) -s -D IBM=1 -D APL=0 -D LIN=0
 # CFLAGS = -Wall -pipe -mms-bitfields -march=i686 -O2 $(INCS) -s -D IBM
 # CFLAGS = -Wall -O3 -pipe -mms-bitfields -malign-double -fno-exceptions -ffast-math -march=pentium -fno-builtin $(INCS) -s -D IBM
 # INSTALL_DIR = "/r/Games/X-Plane 8.64/Resources/plugins"
-INSTALL_DIR = "/r/Games/X-Plane 9.22/Resources/plugins"
+INSTALL_DIR = "/r/Games/X-Plane 9.X/Resources/plugins"
 DEF = xsa-ng.def
 
 all: $(BIN)

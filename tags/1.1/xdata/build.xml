@@ -1,0 +1,228 @@
+ <project name="xdata" default="dist" basedir=".">
+	<description>
+	xsa-ng data processing
+	</description>
+	<!-- set global properties for this build -->
+	<property name="src" location="${basedir}/src"/>
+	<property name="lib" location="${basedir}/lib"/>
+	<property name="build" location="${basedir}/build"/>
+	<property name="dist"  location="${basedir}/dist"/>
+	<property name="datadir" location="s:/data/database"/>
+	<property name="usgsdatadir" location="s:/data/gnisdata"/>
+
+	<property name="nationalfile.timestamp" value="20091002"/>
+
+	<path id="path.build">
+		<pathelement location="${build}"/>
+		<fileset dir="${lib}">
+			<include name="**/*.jar"/>
+		</fileset>
+	</path>
+
+	<path id="path.derby.server">
+		<fileset dir="${lib}">
+			<include name="derby.jar"/>
+			<include name="derbytools.jar"/>
+			<include name="derbyrun.jar"/>
+		</fileset>
+	</path>
+
+	<path id="path.derby.client">
+		<fileset dir="${lib}">
+			<include name="derbyclient.jar"/>
+			<include name="derby.jar"/>
+			<include name="derbytools.jar"/>
+			<include name="derbyrun.jar"/>
+		</fileset>
+	</path>
+
+	<path id="path.runtime">
+		<pathelement location="${build}"/>
+		<path refid="path.derby.client"/>
+	</path>
+
+	<!--
+	<taskdef classname="org.apache.ddlutils.task.DdlToDatabaseTask"
+		name="ddlToDatabase" classpathref="path.build"/>
+	-->
+
+	<target name="init">
+		<!-- Create the time stamp -->
+		<tstamp/>
+		<!-- Create the build directory structure used by compile -->
+		<mkdir dir="${build}"/>
+		<mkdir dir="${dist}"/>
+		<mkdir dir="${datadir}"/>
+		<mkdir dir="${usgsdatadir}"/>
+	</target>
+
+	<target name="compile" depends="init" description="compile the source " >
+		<!-- Compile the java code from ${src} into ${build} -->
+		<javac srcdir="${src}" destdir="${build}" debug="on"/>
+	</target>
+
+	<target name="data-clean" depends="init" description="clean USGS data artifacts">
+		<delete includeemptydirs="true" verbose="true">
+			<fileset dir="${datadir}" includes="**/*"/>
+		</delete>
+	</target>
+
+	<target name="data-get" depends="init" description="get USGS data">
+		<!-- 'src' comes from -> http://geonames.usgs.gov/domestic/download_data.htm -->
+		<get src="http://geonames.usgs.gov/docs/stategaz/NationalFile_${nationalfile.timestamp}.zip" dest="${usgsdatadir}/NationalFile_${nationalfile.timestamp}.zip" verbose="on"/>
+	</target>
+
+	<target name="data-unzip" depends="init" description="unzip USGS data">
+		<unzip src="${usgsdatadir}/NationalFile_${nationalfile.timestamp}.zip" dest="${usgsdatadir}"/>
+	</target>
+
+<!--
+	<target name="data-concat" depends="init" description="concat USGS data file">
+		<delete file="${usgsdatadir}/NationalFile_${nationalfile.timestamp}_combined.csv"/>
+		<concat destfile="${usgsdatadir}/NationalFile_${nationalfile.timestamp}_combined.csv">
+			<first>
+				<fileset dir="${usgsdatadir}" includes="*.txt"/>
+			</first>
+			<filterchain>
+				<headfilter lines="1"/>
+			</filterchain>
+		</concat>
+		<concat destfile="${usgsdatadir}/NationalFile_${nationalfile.timestamp}_combined.csv">
+			<fileset dir="${usgsdatadir}" includes="*.txt"/>
+			<filterchain>
+				<tailfilter lines="-1" skip="1"/>
+			</filterchain>
+		</concat>
+	</target>
+-->
+
+<!--
+	<target name="download" depends="init,data-get,data-unzip,data-concat" description="process USGS data"/>
+-->
+
+	<target name="db-sysinfo" depends="init,compile" description="db info">
+		<java jar="lib/derbyrun.jar" classpathref="path.derby.client" dir="${basedir}">
+			<!--
+			<jvmarg value="-Xdebug"/>
+			<jvmarg value="-Xnoagent"/>
+			<jvmarg value="-Xrunjdwp:transport=dt_socket,server=y,address=5005,suspend=y"/>
+			<sysproperty key="java.compiler" value="NONE"/>
+			-->
+			<arg value="server"/>
+			<arg value="sysinfo"/>
+		</java>
+	</target>
+
+	<target name="db-import" depends="init,compile" description="load USGS data">
+		<java classname="com.dsrts.xdata.XDataImport" classpathref="path.runtime" fork="true" dir="${datadir}">
+			<!--
+			<jvmarg value="-Xdebug"/>
+			<jvmarg value="-Xnoagent"/>
+			<jvmarg value="-Xrunjdwp:transport=dt_socket,server=y,address=5005,suspend=y"/>
+			-->
+			<!--
+			<sysproperty key="java.compiler" value="NONE"/>
+			-->
+			<arg value="${usgsdatadir}/NationalFile_${nationalfile.timestamp}.txt"/>
+		</java>
+	</target>
+
+	<target name="db-export" depends="init,compile" description="load USGS data">
+		<java classname="com.dsrts.xdata.XDataExport" classpathref="path.runtime" fork="true" dir="${datadir}">
+			<!--
+			<jvmarg value="-Xdebug"/>
+			<jvmarg value="-Xnoagent"/>
+			<jvmarg value="-Xrunjdwp:transport=dt_socket,server=y,address=5005,suspend=y"/>
+			-->
+			<!--
+			<sysproperty key="java.compiler" value="NONE"/>
+			-->
+		</java>
+	</target>
+
+
+	<target name="db-start" depends="init" description="start db">
+		<java classname="org.apache.derby.drda.NetworkServerControl" classpathref="path.derby.server" fork="true" dir="${datadir}">
+			<!--
+			<sysproperty key="java.security.manager" value=""/>
+			<sysproperty key="java.security.policy" value="nsrv.policy"/>
+			<sysproperty key="derby.system.home" value="${datadir}"/>
+			-->
+			<!--
+			<sysproperty key="derby.home" value="${datadir}"/>
+			<sysproperty key="derby.log" value="${datadir}"/>
+			-->
+			<arg value="start"/>
+			<!--
+			<arg value="-p"/>
+			<arg value="1368"/>
+			<arg value="-noSecurityManager"/>
+			-->
+		</java>
+	</target>
+
+	<target name="db-stop" depends="init" description="stop db">
+		<!--
+java org.apache.derby.drda.NetworkServerControl shutdown [-h <hostname>] [-p <portnumber>] [-user <username>] [-password <password>]
+-->
+		<java classname="org.apache.derby.drda.NetworkServerControl" classpathref="path.derby.client" fork="true" dir="${datadir}">
+			<arg value="shutdown"/>
+			<!--
+			<arg value="-p"/>
+			<arg value="1368"/>
+			-->
+		</java>
+	</target>
+
+	<target name="db-clean" depends="init" description="clean db directories">
+		<delete includeemptydirs="true" verbose="true">
+			<fileset dir="${datadir}" includes="**/*"/>
+		</delete>
+	</target>
+
+	<target name="db-init" depends="init" description="setup db tables">
+		<!--
+		<sql
+			classpathref="path.derby.client"
+			driver="org.apache.derby.jdbc.ClientDriver"
+			url="jdbc:derby://localhost/data;create=true"
+			userid=""
+			password=""
+			expandProperties="true"
+			>
+			<transaction src="xdataddl.sql"/>
+		</sql>
+		-->
+		<java classname="org.apache.derby.tools.ij" classpathref="path.derby.client" fork="true" dir="${datadir}">
+			<arg value="${basedir}/xdataddl.sql"/>
+		</java>
+	</target>
+
+	<target name="db-admin" depends="init" description="admin">
+		<java classname="org.apache.derby.tools.ij" classpathref="path.derby.client">
+		</java>
+	</target>
+
+	<target name="tree" depends="init,compile" description="tree">
+		<java classname="com.dsrts.xdata.Tree" classpathref="path.build">
+		</java>
+	</target>
+
+  <target name="dist" depends="compile" description="generate the distribution" >
+    <!-- Create the distribution directory -->
+    <mkdir dir="${dist}/lib"/>
+
+    <!-- Put everything in ${build} into the MyProject-${DSTAMP}.jar file -->
+    <jar jarfile="${dist}/lib/MyProject-${DSTAMP}.jar" basedir="${build}"/>
+  </target>
+
+  <target name="clean" description="clean up">
+    <delete includeemptydirs="true" verbose="true">
+		<fileset dir="${build}" includes="**/*"/>
+	</delete>
+    <delete includeemptydirs="true" verbose="true">
+		<fileset dir="${dist}" includes="**/*"/>
+	</delete>
+  </target>
+</project>
+

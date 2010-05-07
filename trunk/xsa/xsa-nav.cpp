@@ -83,39 +83,39 @@ void XSALoadNavRef(XPLMNavRef ref,navinfo_t* nav) {
 
 void XSATouchNavDB(const d_XSAWorldPoint point) {
 
-	static const char delim[] = "|";
-	
-	static FILE *f = NULL;
-	static char file_dlm[1024];
-	
-	static bool init = true;	
-	static bool nav_db_load = false;
-	static bool usgs_db_load = false;
-	
-	static bool report = false;
-	static int report_load_dbnav = 0;
-	static int report_alloc_node = 0;
-	static int report_alloc_link = 0;
-	
-	static XPLMNavRef navref_current = XPLM_NAV_NOT_FOUND;
-	static node_navinfo* ptr_navlist = NULL;
-	static navinfo_t navinfo;
+  static const char delim[] = "|";
 
-	static int id = 0;
+  static FILE *f = NULL;
+  static char file_dlm[1024];
+
+  static bool init = true;
+  static bool nav_db_load = false;
+  static bool usgs_db_load = false;
+
+  static bool report = false;
+  static int report_load_dbnav = 0;
+  static int report_alloc_node = 0;
+  static int report_alloc_link = 0;
+
+  static XPLMNavRef navref_current = XPLM_NAV_NOT_FOUND;
+  static node_navinfo* ptr_navlist = NULL;
+  static navinfo_t navinfo;
+
+  static int id = 0;
 
 	if(init) {
-		navlist = (node_navinfo*) malloc(sizeof(node_navinfo));
-		memset(navlist,0,sizeof(node_navinfo));
-		ptr_navlist = navlist;
-		XPLMGetSystemPath(file_dlm);
-		strcat(file_dlm,"xdata.dlm");
-		f = fopen(file_dlm,"r");
-		if(!f) {
-			XPLMDebugString("xdata.dlm file not found.\n");
-		}
-		init = false;
-		XPLMDebugString("init()\n");
-	}
+      navlist = (node_navinfo*) malloc(sizeof(node_navinfo));
+      memset(navlist,0,sizeof(node_navinfo));
+      ptr_navlist = navlist;
+      XPLMGetSystemPath(file_dlm);
+      strcat(file_dlm,"xdata.dlm");
+      f = fopen(file_dlm,"r");
+      if(!f) {
+          XPLMDebugString("xdata.dlm file not found.\n");
+      }
+      init = false;
+      XPLMDebugString("init()\n");
+  }
 	
 	if(XSADistance(point,db_center,'N') > 30.0) {
 		XPLMDebugString("XSATouchNavDB : (re)set center\n");

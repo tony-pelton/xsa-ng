@@ -77,7 +77,7 @@ void XSAUpdateState();
 void XSADrawState();
 int XSADraw(XPLMDrawingPhase inPhase,int inIsBefore,void* inRefcon);
 void XSADrawString(d_XSA3DPoint translate,double scale,const unsigned char* string);
-void toggleType();
+// void toggleType();
 void key(void* inRefCon);
 void XSAMenuHandler(void*,void*);
 
@@ -362,6 +362,7 @@ PLUGIN_API int XPluginStart(char* outName,char* outSig,char* outDesc) {
 	
 //	details_hot_key_id = XPLMRegisterHotKey(XPLM_VK_F12,xplm_DownFlag,"Toggle Details",key,&details_hot_key_id);
 //	toggle_hot_key_id = XPLMRegisterHotKey(XPLM_VK_F11,xplm_DownFlag,"Toggle Type",key,&toggle_hot_key_id);
+
 	XPLMRegisterDrawCallback(XSADraw,xplm_Phase_Objects,0,NULL);
 	XSARenderInit();
 	
@@ -423,40 +424,30 @@ void menuHandlerMasks(int menu_idx,int* pflags,int MASK) {
 
 void XSAMenuHandler(void* inMenuRef,void* inItemRef) {
 
-	last_toggle = running_time_secs;
-	
-  if(inItemRef == &menu_drawname_idx) {
+	if(inItemRef == &menu_drawname_idx) {
       menuHandlerMasks(menu_drawname_idx,&detail_draw_flags,DETAILS_DRAW_NAME);
-	}
-  
+  }
   if(inItemRef == &menu_drawdistance_idx) {
       menuHandlerMasks(menu_drawdistance_idx,&detail_draw_flags,DETAILS_DRAW_DISTANCE);
-	}
-  
+  }
   if(inItemRef == &menu_drawid_idx) {
       menuHandlerMasks(menu_drawid_idx,&detail_draw_flags,DETAILS_DRAW_ID);
 	}
-  
   if(inItemRef == &menu_airport_idx) {
       menuHandlerMasks(menu_airport_idx,&draw_flags,xsaNavTypeAirport);
 	}
-	
   if(inItemRef == &menu_navaid_idx) {
       menuHandlerMasks(menu_navaid_idx,&draw_flags,xsaNavTypeVOR);      
 	}
-	
   if(inItemRef == &menu_fix_idx) {
       menuHandlerMasks(menu_fix_idx,&draw_flags,xsaNavTypeFix);      
 	}
-	
   if(inItemRef == &menu_municipal_idx) {
       menuHandlerMasks(menu_municipal_idx,&draw_flags,xsaNavTypeUSGSMunicipal);      
 	}
-	
   if(inItemRef == &menu_civil_idx) {
       menuHandlerMasks(menu_civil_idx,&draw_flags,xsaNavTypeUSGSCivil);      
 	}
-
   if(inItemRef == &menu_terrain_idx) {
       menuHandlerMasks(menu_terrain_idx,&draw_flags,xsaNavTypeUSGSTerrain);      
 	}
@@ -478,39 +469,6 @@ void key(void* inRefCon) {
     }
     */
 
-}
-
-void toggleType() {
-	last_toggle = running_time_secs;
-	
-	switch(draw_flags) {
-		case 0:
-        draw_flags = 0|xsaNavTypeAirport;
-			break;
-			
-		case xsaNavTypeAirport:
-			draw_flags = 0|xsaNavTypeVOR;
-			break;
-
-		case xsaNavTypeVOR:
-			draw_flags = 0|xsaNavTypeFix;
-			break;
-			
-		case xsaNavTypeFix:
-			draw_flags = 0|xsaNavTypeUSGSCivil;
-			break;
-			
-		case xsaNavTypeUSGSCivil:
-			draw_flags = 0|xsaNavTypeUSGSMunicipal;
-			break;
-			
-		case xsaNavTypeUSGSMunicipal:
-			draw_flags = 0|xsaNavTypeUSGSTerrain;
-			break;
-			
-		default:
-			draw_flags = 0;
-	}	
 }
 
 void dump() {

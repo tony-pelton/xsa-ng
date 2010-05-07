@@ -7,8 +7,10 @@
 	<property name="lib" location="${basedir}/lib"/>
 	<property name="build" location="${basedir}/build"/>
 	<property name="dist"  location="${basedir}/dist"/>
-	<property name="datadir" location="${basedir}/database"/>
-	<property name="usgsdatadir" location="${basedir}/usgsdata"/>
+	<property name="datadir" location="s:/data/database"/>
+	<property name="usgsdatadir" location="s:/data/gnisdata"/>
+
+	<property name="nationalfile.timestamp" value="20091002"/>
 
 	<path id="path.build">
 		<pathelement location="${build}"/>
@@ -59,19 +61,25 @@
 		<javac srcdir="${src}" destdir="${build}" debug="on"/>
 	</target>
 
+	<target name="data-clean" depends="init" description="clean USGS data artifacts">
+		<delete includeemptydirs="true" verbose="true">
+			<fileset dir="${datadir}" includes="**/*"/>
+		</delete>
+	</target>
+
 	<target name="data-get" depends="init" description="get USGS data">
 		<!-- 'src' comes from -> http://geonames.usgs.gov/domestic/download_data.htm -->
-		<get src="http://geonames.usgs.gov/docs/stategaz/NationalFile_20091002.zip" dest="${usgsdatadir}/NationalFile.zip" verbose="on"/>
+		<get src="http://geonames.usgs.gov/docs/stategaz/NationalFile_${nationalfile.timestamp}.zip" dest="${usgsdatadir}/NationalFile_${nationalfile.timestamp}.zip" verbose="on"/>
 	</target>
 
 	<target name="data-unzip" depends="init" description="unzip USGS data">
-		<unzip src="${usgsdatadir}/NationalFile.zip" dest="${usgsdatadir}"/>
+		<unzip src="${usgsdatadir}/NationalFile_${nationalfile.timestamp}.zip" dest="${usgsdatadir}"/>
 	</target>
 
+<!--
 	<target name="data-concat" depends="init" description="concat USGS data file">
-		<delete file="${usgsdatadir}/NationalFile_combined.csv"/>
-
-		<concat destfile="${usgsdatadir}/NationalFile_combined.csv">
+		<delete file="${usgsdatadir}/NationalFile_${nationalfile.timestamp}_combined.csv"/>
+		<concat destfile="${usgsdatadir}/NationalFile_${nationalfile.timestamp}_combined.csv">
 			<first>
 				<fileset dir="${usgsdatadir}" includes="*.txt"/>
 			</first>
@@ -79,17 +87,18 @@
 				<headfilter lines="1"/>
 			</filterchain>
 		</concat>
-
-		<concat destfile="${usgsdatadir}/NationalFile_combined.csv">
+		<concat destfile="${usgsdatadir}/NationalFile_${nationalfile.timestamp}_combined.csv">
 			<fileset dir="${usgsdatadir}" includes="*.txt"/>
 			<filterchain>
 				<tailfilter lines="-1" skip="1"/>
 			</filterchain>
 		</concat>
-
 	</target>
+-->
 
+<!--
 	<target name="download" depends="init,data-get,data-unzip,data-concat" description="process USGS data"/>
+-->
 
 	<target name="db-sysinfo" depends="init,compile" description="db info">
 		<java jar="lib/derbyrun.jar" classpathref="path.derby.client" dir="${basedir}">
@@ -114,7 +123,7 @@
 			<!--
 			<sysproperty key="java.compiler" value="NONE"/>
 			-->
-			<arg value="${usgsdatadir}/NationalFile_combined.csv"/>
+			<arg value="${usgsdatadir}/NationalFile_${nationalfile.timestamp}.txt"/>
 		</java>
 	</target>
 
@@ -214,11 +223,6 @@ java org.apache.derby.drda.NetworkServerControl shutdown [-h <hostname>] [-p <po
     <delete includeemptydirs="true" verbose="true">
 		<fileset dir="${dist}" includes="**/*"/>
 	</delete>
-	<!--
-    <delete includeemptydirs="true" verbose="true">
-		<fileset dir="${datadir}" includes="**/*"/>
-	</delete>
-	-->
   </target>
 </project>
 

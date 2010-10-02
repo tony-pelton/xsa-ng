@@ -45,7 +45,7 @@ void XSALoadNavRef(XPLMNavRef ref,navinfo_t* nav) {
 				break;
 			}
 			const static char seap[] = "[S]";
-			if(strncmp(heli,nav->name,strlen(seap)) == 0) {
+			if(strncmp(seap,nav->name,strlen(seap)) == 0) {
 				nav->xsaType = xsaNavTypeSeaport;
 				break;
 			}
@@ -197,9 +197,9 @@ void XSATouchNavDB(const d_XSAWorldPoint point) {
 				memcpy(ptr_navlist->node,&navinfo,sizeof(navinfo_t));
 				report_load_dbnav++;
 				ptr_navlist = ptr_navlist->next;
-				char s[1024];
-				sprintf(s,"XSATouchNavDB() : loaded navdb name : %s\n",navinfo.name);
-				XPLMDebugString(s);
+				// char s[1024];
+				// sprintf(s,"XSATouchNavDB() : loaded navdb name : %s\n",navinfo.name);
+				// XPLMDebugString(s);
 			}
 
 		} // nav_db_load
@@ -252,9 +252,9 @@ void XSATouchNavDB(const d_XSAWorldPoint point) {
 				report_load_dbnav++;
 				ptr_navlist = ptr_navlist->next;
 
-				char s[1024];
-				sprintf(s,"XSATouchNavDB() : loaded usgs db name %s\n",navinfo.name);
-				XPLMDebugString(s);				
+				// char s[1024];
+				// sprintf(s,"XSATouchNavDB() : loaded usgs db name %s\n",navinfo.name);
+				// XPLMDebugString(s);
 
 			} // usgs in range
 		} // usgs_db_load

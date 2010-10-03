@@ -1,9 +1,9 @@
 CC   = g++
-OBJ  = fortify.o main.o
-LIBS =  -L /s/src/xplugin/XPSDK102/Libraries/Win/
-INCS =  -I /s/src/xplugin/XPSDK102/CHeaders/XPLM/
+OBJ  = fortify.o main.o sqlite3.o
+LIBS = -L /s/lib/XPSDK201/Libraries/Win/
+INCS = -I /s/lib/XPSDK201/CHeaders/XPLM/ -I ./sqlite
 BIN  = main.exe
-CFLAGS = -Wall -O2 $(INCS) -s -D IBM -D FORTIFY=1
+CFLAGS = -Wall -O2 $(INCS) -s -DIBM=1 -DFORTIFY=1
 
 all: $(BIN)
 
@@ -18,3 +18,6 @@ main.o: main.cpp
 
 fortify.o: fortify.cpp
 	$(CC) -c fortify.cpp -o fortify.o $(CFLAGS)
+
+sqlite3.o: sqlite/sqlite3.c
+	gcc -c sqlite/sqlite3.c -o sqlite3.o $(CFLAGS)

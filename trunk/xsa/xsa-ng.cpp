@@ -71,6 +71,10 @@ int XSADraw(XPLMDrawingPhase inPhase,int inIsBefore,void* inRefcon);
 void XSADrawString(d_XSA3DPoint translate,double scale,const unsigned char* string);
 void key(void* inRefCon);
 void XSAMenuHandler(void*,void*);
+void menuItemSyncState();
+void menuItemSyncToggle(int,int*,int MASK);
+
+
 
 int XSADraw(XPLMDrawingPhase inPhase, int inIsBefore, void* inRefcon) {
     XSAUpdateState();
@@ -371,17 +375,13 @@ PLUGIN_API int XPluginStart(char* outName, char* outSig, char* outDesc) {
     XPLMAppendMenuSeparator(menu_root);
 
     menu_airport_idx = XPLMAppendMenuItem(menu_root, "Draw Airport", &menu_airport_idx, 1);
-    XPLMCheckMenuItem(menu_root, menu_airport_idx, xplm_Menu_Unchecked);
     menu_navaid_idx = XPLMAppendMenuItem(menu_root, "Draw NAVAID", &menu_navaid_idx, 1);
-    XPLMCheckMenuItem(menu_root, menu_navaid_idx, xplm_Menu_Unchecked);
     menu_fix_idx = XPLMAppendMenuItem(menu_root, "Draw Fix", &menu_fix_idx, 1);
-    XPLMCheckMenuItem(menu_root, menu_fix_idx, xplm_Menu_Unchecked);
     menu_civil_idx = XPLMAppendMenuItem(menu_root, "Draw Civil", &menu_civil_idx, 1);
-    XPLMCheckMenuItem(menu_root, menu_civil_idx, xplm_Menu_Unchecked);
     menu_terrain_idx = XPLMAppendMenuItem(menu_root, "Draw Terrain", &menu_terrain_idx, 1);
-    XPLMCheckMenuItem(menu_root, menu_terrain_idx, xplm_Menu_Unchecked);
     menu_municipal_idx = XPLMAppendMenuItem(menu_root, "Draw Municipal", &menu_municipal_idx, 1);
-    XPLMCheckMenuItem(menu_root, menu_municipal_idx, xplm_Menu_Unchecked);
+
+    menuItemSyncState();
 
     return 1;
 }
@@ -403,44 +403,59 @@ PLUGIN_API int XPluginEnable(void) { return 1; }
 PLUGIN_API void XPluginDisable(void) {
 }
 
-void menuHandlerMasks(int menu_idx, int* pflags, int MASK) {
+void menuItemSyncState() {
+    menuItemSyncToggle(menu_drawname_idx, &detail_draw_flags, DETAILS_DRAW_NAME);
+    menuItemSyncToggle(menu_drawdistance_idx, &detail_draw_flags, DETAILS_DRAW_DISTANCE);
+    menuItemSyncToggle(menu_drawid_idx, &detail_draw_flags, DETAILS_DRAW_ID);
+    menuItemSyncToggle(menu_airport_idx, &draw_flags, xsaNavTypeAirport);
+    menuItemSyncToggle(menu_navaid_idx, &draw_flags, xsaNavTypeVOR);
+    menuItemSyncToggle(menu_fix_idx, &draw_flags, xsaNavTypeFix);
+    menuItemSyncToggle(menu_municipal_idx, &draw_flags, xsaNavTypeUSGSMunicipal);
+    menuItemSyncToggle(menu_civil_idx, &draw_flags, xsaNavTypeUSGSCivil);
+    menuItemSyncToggle(menu_terrain_idx, &draw_flags, xsaNavTypeUSGSTerrain);
+}
+
+/*
+ * set menu item check state to match the flag variable and mask
+ */
+void menuItemSyncToggle(int menu_idx, int* pflags, int MASK) {
     int flags = *pflags;
     if ((flags & MASK) == MASK) {
-        XPLMCheckMenuItem(menu_root, menu_idx, xplm_Menu_Unchecked);
-    } else {
         XPLMCheckMenuItem(menu_root, menu_idx, xplm_Menu_Checked);
+    } else {
+        XPLMCheckMenuItem(menu_root, menu_idx, xplm_Menu_Unchecked);
     }
-    *pflags = flags ^ MASK;
 }
 
 void XSAMenuHandler(void* inMenuRef, void* inItemRef) {
     if (inItemRef == &menu_drawname_idx) {
-        menuHandlerMasks(menu_drawname_idx, &detail_draw_flags, DETAILS_DRAW_NAME);
+        detail_draw_flags = detail_draw_flags ^ DETAILS_DRAW_NAME;
     }
     if (inItemRef == &menu_drawdistance_idx) {
-        menuHandlerMasks(menu_drawdistance_idx, &detail_draw_flags, DETAILS_DRAW_DISTANCE);
+        detail_draw_flags = detail_draw_flags ^ DETAILS_DRAW_DISTANCE;
     }
     if (inItemRef == &menu_drawid_idx) {
-        menuHandlerMasks(menu_drawid_idx, &detail_draw_flags, DETAILS_DRAW_ID);
+        detail_draw_flags = detail_draw_flags ^ DETAILS_DRAW_ID;
     }
     if (inItemRef == &menu_airport_idx) {
-        menuHandlerMasks(menu_airport_idx, &draw_flags, xsaNavTypeAirport);
+        draw_flags = draw_flags ^ xsaNavTypeAirport;
     }
     if (inItemRef == &menu_navaid_idx) {
-        menuHandlerMasks(menu_navaid_idx, &draw_flags, xsaNavTypeVOR);
+        draw_flags = draw_flags ^ xsaNavTypeVOR;
     }
     if (inItemRef == &menu_fix_idx) {
-        menuHandlerMasks(menu_fix_idx, &draw_flags, xsaNavTypeFix);
+        draw_flags = draw_flags ^ xsaNavTypeFix;
     }
     if (inItemRef == &menu_municipal_idx) {
-        menuHandlerMasks(menu_municipal_idx, &draw_flags, xsaNavTypeUSGSMunicipal);
+        draw_flags = draw_flags ^ xsaNavTypeUSGSMunicipal;
     }
     if (inItemRef == &menu_civil_idx) {
-        menuHandlerMasks(menu_civil_idx, &draw_flags, xsaNavTypeUSGSCivil);
+        draw_flags = draw_flags ^ xsaNavTypeUSGSCivil;
     }
     if (inItemRef == &menu_terrain_idx) {
-        menuHandlerMasks(menu_terrain_idx, &draw_flags, xsaNavTypeUSGSTerrain);
+        draw_flags = draw_flags ^ xsaNavTypeUSGSTerrain;
     }
+    menuItemSyncState();
 }
 /********************
  * utilities

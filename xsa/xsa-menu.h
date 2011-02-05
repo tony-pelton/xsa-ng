@@ -8,6 +8,8 @@
 #ifndef _XSA_MENU_H
 #define	_XSA_MENU_H
 
+#include <ctype.h>
+
 #define DETAILS_DRAW_NAME 1
 #define DETAILS_DRAW_ID 2
 #define DETAILS_DRAW_DISTANCE 4

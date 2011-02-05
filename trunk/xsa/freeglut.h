@@ -23,7 +23,11 @@
 #define FGAPIENTRY
 #endif
 
+#ifdef __WIN32__
 #   define FGAPI __declspec(dllexport)
+#else
+#define FGAPI
+#endif
 
 typedef struct tagSFG_StrokeVertex SFG_StrokeVertex;
 struct tagSFG_StrokeVertex
@@ -55,22 +59,13 @@ struct tagSFG_StrokeFont
     const SFG_StrokeChar** Characters;          /* The characters mapping    */
 };
 
-#ifdef __WIN32__
-FGAPI FGAPIENTRY
-#endif
-void glutStrokeCharacter( void* font, int character );
-#ifdef __WIN32__
-FGAPI FGAPIENTRY
-#endif
-int glutStrokeWidth( void* font, int character );
-#ifdef __WIN32__
-FGAPI FGAPIENTRY
-#endif
-int glutStrokeLength( void* font, const unsigned char* string );
-#ifdef __WIN32__
-FGAPI FGAPIENTRY
-#endif
-void glutStrokeString( void* fontID, const unsigned char *string );
+
+FGAPI FGAPIENTRY void glutStrokeCharacter( void* font, int character );
+
+FGAPI FGAPIENTRY int glutStrokeWidth( void* font, int character );
+
+FGAPI FGAPIENTRY int glutStrokeLength( void* font, const unsigned char* string );
+
+FGAPI FGAPIENTRY void glutStrokeString( void* fontID, const unsigned char *string );
 
 #endif	/* _FREEGLUT_H */
-

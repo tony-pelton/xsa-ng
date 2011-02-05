@@ -4,6 +4,8 @@
 
 #include <GL/gl.h>
 
+#include "freeglut.h"
+
 #include "xsa-ng-render.h"
 #include "xsa-ng-types.h"
 
@@ -26,15 +28,15 @@ void XSARenderInit() {
 	free(points);
 }
 
-void XSARenderShapeDiamond(double x, double y, double z) {
-	XSARenderShape(SHAPE_LIST_DIAMOND,x,y,z);
+void XSARenderShapeDiamond(double x, double y, double z,double scale) {
+	XSARenderShape(SHAPE_LIST_DIAMOND,x,y,z,scale);
 }
 
-void XSARenderShape(GLuint list,double x, double y, double z) {
+void XSARenderShape(GLuint list,double x, double y, double z,double scale) {
 	glPushMatrix();
 		glTranslated(x,y,z);
 		glRotatef(0.0,0.0,1.0,0.0);
-    	glScaled(1.0,1.0,1.0);
+    	glScaled(scale,scale,scale);
 		glCallList(SHAPE_LIST_DIAMOND);
  	glPopMatrix();
 }
@@ -87,4 +89,28 @@ d_XSA3DPoint** XSADiamond() {
 	points[15] = XSAGeneratePoint3D(x-w,y,z);
 	
 	return points;
+}
+
+void XSADrawString(d_XSA3DPoint translate,float rotation,double scale,const unsigned char* string) {
+    int length = glutStrokeLength(GLUT_STROKE_MONO_ROMAN, string);
+    glPushMatrix();
+        glTranslated(translate.x, translate.y, translate.z);
+        glScaled(scale, scale, scale);
+        glRotatef(-rotation, 0.0, 1.0, 0.0);
+        glTranslated(-(length / 2), 0.0, 0.0);
+        glutStrokeString(GLUT_STROKE_MONO_ROMAN, string);
+    glPopMatrix();
+}
+
+void XSADrawStringHUD(d_XSA3DPoint point,float rotation,const unsigned char* buf) {
+    int length = glutStrokeLength(GLUT_STROKE_MONO_ROMAN,  buf);
+    glColor3f(0.0, 1.0, 0.0); // green
+    glPushMatrix();
+        glTranslated(point.x, point.y, point.z);
+        glRotatef(-rotation, 0.0, 1.0, 0.0);
+        glTranslated(0.0, 0.1, -10.0);
+        glScaled(0.001, 0.001, 0.001);
+        glTranslated(-(length / 2), 0.0, 0.0);
+        glutStrokeString(GLUT_STROKE_MONO_ROMAN, buf);
+    glPopMatrix();
 }

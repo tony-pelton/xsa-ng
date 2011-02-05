@@ -4,6 +4,8 @@
 #include <GL/gl.h>
 #include <XPLMNavigation.h>
 
+#define XSA_NAUTICAL_MILE_METERS 1852
+
 enum _xsaNavType {
 	xsaNavTypeUnknown = 1, // 2^^0
 	xsaNavTypeAirport = 2, // 2^^1

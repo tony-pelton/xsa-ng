@@ -17,7 +17,12 @@
 #   define  GLUT_STROKE_ROMAN               ((void *)0x0000)
 #   define  GLUT_STROKE_MONO_ROMAN          ((void *)0x0001)
 
+#ifdef __WIN32__
 #   define FGAPIENTRY __stdcall
+#else
+#define FGAPIENTRY
+#endif
+
 #   define FGAPI __declspec(dllexport)
 
 typedef struct tagSFG_StrokeVertex SFG_StrokeVertex;

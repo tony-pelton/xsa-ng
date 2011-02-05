@@ -3,7 +3,7 @@ CC = gcc
 #
 XPLOBJ  = xsa-ng.o xsa-ng-render.o xsa-nav.o xsa-menu.o fortify.o freeglut_font.o freeglut_stroke_mono_roman.o freeglut_stroke_roman.o sqlite3.o
 XPLBIN  = xsa-ng-win.xpl
-XPLLIBS = -lXPLM -lopengl32
+XPLLIBS = -framework OpenGL -lXPLM
 XPLLIBSDIR = -L /Users/tpelton/src/lib/XPSDK201/Libraries/Mac/
 XPLINCS = -I/Users/tpelton/src/lib/XPSDK201/CHeaders/XPLM -I./sqlite
 XPLDEF = xsa-ng.def
@@ -37,8 +37,7 @@ $(DATABIN): $(DATAOBJ)
 	$(CC+) $(DATAOBJ) -o $(DATABIN) $(DATALIBS) $(DATALIBSDIR)
 
 $(XPLBIN): $(XPLOBJ)
-	# dllwrap -v --mno-cygwin --driver-name=$(CC+) --dllname=$(XPLBIN) $(XPLOBJ) $(XPLLIBS)
-	$(CC+) -shared -o $(XPLBIN) -Wl,--out-implib,$(XPLBIN) $(XPLOBJ) $(XPLLIBS) $(XPLLIBSDIR)
+	$(CC+) -shared -o $(XPLBIN) $(XPLLIBS) $(XPLLIBSDIR) $(XPLOBJ)
 	# strip $(XPLBIN)
 
 xsa-ng.o: xsa-ng.cpp

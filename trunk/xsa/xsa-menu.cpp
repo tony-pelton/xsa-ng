@@ -1,4 +1,4 @@
-#include <stdbool.h>
+#include <stdlib.h>
 
 #include <XPLMMenus.h>
 

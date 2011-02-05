@@ -1,7 +1,9 @@
-#include "xsa-menu.h"
-#include "xsa-ng-types.h"
+#include <ctype.h>
 
 #include <XPLMMenus.h>
+
+#include "xsa-menu.h"
+#include "xsa-ng-types.h"
 
 int draw_flags = 0;
 int detail_draw_flags = 0;

@@ -15,7 +15,7 @@ DATAINCS = -I ./sqlite
 DATALIBSDIR =
 #
 # CFLAGS = -Wall -O2 $(INCS) -s -D IBM -D FORTIFY
-CFLAGS = -Wall -O2 $(XPLINCS) -s -DIBM=1 -DAPL=0 -DLIN=0
+CFLAGS = -Wall -O2 $(XPLINCS) -s -DIBM=0 -DAPL=1 -DLIN=0
 # CFLAGS = -Wall -O3 -fomit-frame-pointer -ffast-math -mno-cygwin -march=i486 $(INCS) -s -D IBM
 # CFLAGS = -Wall -pipe -mms-bitfields -march=i686 -O2 $(INCS) -s -D IBM
 # CFLAGS = -Wall -O3 -pipe -mms-bitfields -malign-double -fno-exceptions -ffast-math -march=pentium -fno-builtin $(INCS) -s -D IBM

@@ -1,7 +1,12 @@
 #ifndef _XSA_NG_TYPES_H
 #define	_XSA_NG_TYPES_H
 
+#ifdef __APPLE__
+#include <OpenGL/gl.h>
+#else
 #include <GL/gl.h>
+#endif
+
 #include <XPLMNavigation.h>
 
 #define XSA_NAUTICAL_MILE_METERS 1852

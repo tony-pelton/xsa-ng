@@ -1,13 +1,8 @@
 #include "fortify.h"
 
 #include <stdio.h>
-
-#include <GL/gl.h>
-
 #include "freeglut.h"
-
 #include "xsa-ng-render.h"
-#include "xsa-ng-types.h"
 
 GLuint SHAPE_LIST_DIAMOND;
 

@@ -8,7 +8,12 @@
 #ifndef _XSA_NG_RENDER_H
 #define	_XSA_NG_RENDER_H
 
+#ifdef __APPLE__
+#include <OpenGL/gl.h>
+#else
 #include <GL/gl.h>
+#endif
+
 #include "xsa-ng-types.h"
 
 void XSARenderInit();

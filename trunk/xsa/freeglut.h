@@ -51,21 +51,21 @@ struct tagSFG_StrokeFont
 };
 
 #ifdef __WIN32__
-FGAPI
+FGAPI FGAPIENTRY
 #endif
-void    FGAPIENTRY glutStrokeCharacter( void* font, int character );
+void glutStrokeCharacter( void* font, int character );
 #ifdef __WIN32__
-FGAPI
+FGAPI FGAPIENTRY
 #endif
-int     FGAPIENTRY glutStrokeWidth( void* font, int character );
+int glutStrokeWidth( void* font, int character );
 #ifdef __WIN32__
-FGAPI
+FGAPI FGAPIENTRY
 #endif
-int     FGAPIENTRY glutStrokeLength( void* font, const unsigned char* string );
+int glutStrokeLength( void* font, const unsigned char* string );
 #ifdef __WIN32__
-FGAPI
+FGAPI FGAPIENTRY
 #endif
-void    FGAPIENTRY glutStrokeString( void* fontID, const unsigned char *string );
+void glutStrokeString( void* fontID, const unsigned char *string );
 
 #endif	/* _FREEGLUT_H */
 

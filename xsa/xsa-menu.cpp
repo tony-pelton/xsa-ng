@@ -1,4 +1,4 @@
-#include <ctype.h>
+#include <stdbool.h>
 
 #include <XPLMMenus.h>
 

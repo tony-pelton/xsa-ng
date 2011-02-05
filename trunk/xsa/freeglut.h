@@ -50,10 +50,22 @@ struct tagSFG_StrokeFont
     const SFG_StrokeChar** Characters;          /* The characters mapping    */
 };
 
-FGAPI void    FGAPIENTRY glutStrokeCharacter( void* font, int character );
-FGAPI int     FGAPIENTRY glutStrokeWidth( void* font, int character );
-FGAPI int     FGAPIENTRY glutStrokeLength( void* font, const unsigned char* string );
-FGAPI void    FGAPIENTRY glutStrokeString( void* fontID, const unsigned char *string );
+#ifdef __WIN32__
+FGAPI
+#endif
+void    FGAPIENTRY glutStrokeCharacter( void* font, int character );
+#ifdef __WIN32__
+FGAPI
+#endif
+int     FGAPIENTRY glutStrokeWidth( void* font, int character );
+#ifdef __WIN32__
+FGAPI
+#endif
+int     FGAPIENTRY glutStrokeLength( void* font, const unsigned char* string );
+#ifdef __WIN32__
+FGAPI
+#endif
+void    FGAPIENTRY glutStrokeString( void* fontID, const unsigned char *string );
 
 #endif	/* _FREEGLUT_H */
 

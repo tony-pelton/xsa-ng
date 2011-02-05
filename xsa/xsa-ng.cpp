@@ -11,153 +11,125 @@
 #include <XPLMDataAccess.h>
 #include <XPLMPlugin.h>
 #include <XPLMNavigation.h>
-#include <XPLMMenus.h>
 
+#include "xsa-menu.h"
 #include "xsa-nav.h"
 #include "xsa-ng-types.h"
 #include "xsa-ng-render.h"
 #include "freeglut.h"
 
-#define XSA_NAUTICAL_MILE_METERS 1852
+//static XPLMHotKeyID details_hot_key_id = NULL;
+//static XPLMHotKeyID toggle_hot_key_id = NULL;
 
-#define DETAILS_DRAW_NAME 1
-#define DETAILS_DRAW_ID 2
-#define DETAILS_DRAW_DISTANCE 4
+static struct {
+    struct {
+        float X; // plane
+        float Y; // plane
+        float Z; // plane
+		float cX; // camera
+		float cY; // camera
+		float cZ; // camera
+        double Lat;
+        double Lon;
+        double Elev;
+        float Viz;
+        float ViewHdg;
+        float Psi;
+        float RunningTime;
+    } v;
+    XPLMDataRef X;
+    XPLMDataRef Y;
+    XPLMDataRef Z;
+    XPLMDataRef cX;
+    XPLMDataRef cY;
+    XPLMDataRef cZ;
+    XPLMDataRef	Lat;
+    XPLMDataRef	Lon;
+    XPLMDataRef	Elev;
+    XPLMDataRef Viz;
+    XPLMDataRef ViewHdg;
+    XPLMDataRef Psi;
+    XPLMDataRef RunningTime;
+} dr;
 
-XPLMHotKeyID details_hot_key_id = NULL;
-XPLMHotKeyID toggle_hot_key_id = NULL;
+static int list_count = 0;
+static bool debug_dump = false;
 
-XPLMMenuID menu_root = NULL;
-int menu_root_idx = 0;
-int menu_drawname_idx = 0;
-int menu_drawdistance_idx = 0;
-int menu_drawid_idx = 0;
-int menu_fix_idx = 0;
-int menu_airport_idx = 0;
-int menu_navaid_idx = 0;
-int menu_civil_idx = 0;
-int menu_terrain_idx = 0;
-int menu_municipal_idx = 0;
-
-XPLMDataRef dr_X = NULL;
-XPLMDataRef dr_Y = NULL;
-XPLMDataRef dr_Z = NULL;
-XPLMDataRef	dr_Lat = NULL;
-XPLMDataRef	dr_Lon = NULL;
-XPLMDataRef	dr_Elev = NULL;
-XPLMDataRef dr_Viz = NULL;
-XPLMDataRef dr_ViewHdg = NULL;
-XPLMDataRef dr_Psi = NULL;
-XPLMDataRef dr_RunningTime = NULL;
-
-d_XSA3DPoint plane_ogl;
-d_XSAWorldPoint plane_coord;
-float viz = 0.0;
-float view_heading = 0.0;
-float running_time_secs = 0.0;
-float psi = 0.0;
-
-
-int list_count = 0;
-bool debug_dump = false;
-int draw_flags = 0;
-int detail_draw_flags = 0;
-float last_toggle = 0.0;
-
-void XSADrawNav();
-void XSAUpdateState();
-void XSADrawState();
-int XSADraw(XPLMDrawingPhase inPhase,int inIsBefore,void* inRefcon);
-void XSADrawString(d_XSA3DPoint translate,double scale,const unsigned char* string);
-void key(void* inRefCon);
-void XSAMenuHandler(void*,void*);
-void menuItemSyncState();
-void menuItemSyncToggle(int,int*,int MASK);
-
-
+/*
+ * prototypes
+ */
+static void XSADrawNav();
+static void XSAUpdateState();
+static int XSADraw(XPLMDrawingPhase,int,void*);
+static void key(void*);
 
 int XSADraw(XPLMDrawingPhase inPhase, int inIsBefore, void* inRefcon) {
     XSAUpdateState();
-    XSATouchNavDB(plane_coord);
+    d_XSAWorldPoint point;
+    point.height = dr.v.Elev;
+    point.lat = dr.v.Lat;
+    point.lon = dr.v.Lon;
+    XSATouchNavDB(point);
     if (draw_flags) {
         XSADrawNav();
-        //		if(draw_state) { XSADrawState(); }
+//        if(draw_state) { XSADrawState(); }
     }
     debug_dump = false;
     return 1;
 }
 
 void XSAUpdateState() {
-    plane_ogl.x = XPLMGetDataf(dr_X);
-    plane_ogl.y = XPLMGetDataf(dr_Y);
-    plane_ogl.z = XPLMGetDataf(dr_Z);
-
-    plane_coord.lat = XPLMGetDatad(dr_Lat);
-    plane_coord.lon = XPLMGetDatad(dr_Lon);
-    plane_coord.height = XPLMGetDatad(dr_Elev);
-
-    viz = XPLMGetDataf(dr_Viz);
-
-    view_heading = XPLMGetDataf(dr_ViewHdg);
-
-    psi = XPLMGetDataf(dr_Psi);
-
-    running_time_secs = XPLMGetDataf(dr_RunningTime);
-
+    dr.v.X = XPLMGetDataf(dr.X);
+    dr.v.Y = XPLMGetDataf(dr.Y);
+    dr.v.Z = XPLMGetDataf(dr.Z);
+    // dr.v.cX = XPLMGetDataf(dr.cX);
+    // dr.v.cY = XPLMGetDataf(dr.cY);
+    // dr.v.cZ = XPLMGetDataf(dr.cZ);
+    dr.v.Lat = XPLMGetDatad(dr.Lat);
+    dr.v.Lon = XPLMGetDatad(dr.Lon);
+    dr.v.Elev = XPLMGetDatad(dr.Elev);
+    dr.v.Viz = XPLMGetDataf(dr.Viz);
+    dr.v.ViewHdg = XPLMGetDataf(dr.ViewHdg);
+    dr.v.Psi = XPLMGetDataf(dr.Psi);
+    dr.v.RunningTime = XPLMGetDataf(dr.RunningTime);
     XPLMSetGraphicsState(0, 0, 0, 0, 0, 1, 1);
 }
 
 void XSADrawState() {
     char buf[512];
-
     strcpy(buf, "XSA-NG");
-
     switch (draw_flags) {
         case xsaNavTypeAirport:
             strcat(buf, " Airports");
             break;
-
         case xsaNavTypeVOR:
             strcat(buf, " Nav Aids");
             break;
-
         case xsaNavTypeFix:
             strcat(buf, " Fixes");
             break;
-
         case xsaNavTypeUSGSCivil:
             strcat(buf, " Civil USGS");
             break;
-
         case xsaNavTypeUSGSMunicipal:
             strcat(buf, " Municipal USGS");
             break;
-
         case xsaNavTypeUSGSTerrain:
             strcat(buf, " Terrain USGS");
             break;
     }
-
     if (detail_draw_flags != 0 && !(draw_flags == xsaNavTypeFix)) {
         strcat(buf, " (w/ Details)");
     }
-
-    int length = glutStrokeLength(GLUT_STROKE_MONO_ROMAN, (unsigned char*) & buf);
-
-    glColor3f(0.0, 1.0, 0.0); // green
-
-    glPushMatrix();
-    glTranslated(plane_ogl.x, plane_ogl.y, plane_ogl.z);
-    glRotatef(-view_heading, 0.0, 1.0, 0.0);
-    glTranslated(0.0, 0.1, -10.0);
-    glScaled(0.001, 0.001, 0.001);
-    glTranslated(-(length / 2), 0.0, 0.0);
-    glutStrokeString(GLUT_STROKE_MONO_ROMAN, (unsigned char*) buf);
-    glPopMatrix();
+    d_XSA3DPoint point;
+    point.x = dr.v.X;
+    point.y = dr.v.Y;
+    point.z = dr.v.Z;
+    XSADrawStringHUD(point,dr.v.ViewHdg,(const unsigned char*)buf);
 }
 
 void XSADrawNav() {
-    double max_viz = (viz + XSA_NAUTICAL_MILE_METERS);
+    double max_viz = (dr.v.Viz + XSA_NAUTICAL_MILE_METERS);
     double max_viz_nm = max_viz / XSA_NAUTICAL_MILE_METERS;
     d_XSA3DPoint gl_point;
     navinfo_t stack_nav;
@@ -191,7 +163,11 @@ void XSADrawNav() {
         d_XSAWorldPoint nav_point;
         nav_point.lat = ptr_nav->lat;
         nav_point.lon = ptr_nav->lon;
-        double range = XSADistance(nav_point, plane_coord, 'N');
+        d_XSAWorldPoint point;
+        point.height = dr.v.Elev;
+        point.lat = dr.v.Lat;
+        point.lon = dr.v.Lon;
+        double range = XSADistance(nav_point, point, 'N');
 
         if (range > max_viz_nm) {
             if (debug_dump) {
@@ -261,9 +237,9 @@ void XSADrawNav() {
                 if (!((draw_flags & xsaNavTypeFix) == xsaNavTypeFix)) {
                     continue;
                 }
-                if (ptr_nav->height < plane_coord.height) {
+                if (ptr_nav->height < point.height) {
                     memcpy(&stack_nav, ptr_nav, sizeof (navinfo_t));
-                    stack_nav.height = plane_coord.height;
+                    stack_nav.height = point.height;
                     ptr_nav = &stack_nav;
                 }
                 glColor3f(0.0, 0.0, 1.0); // blue
@@ -282,7 +258,19 @@ void XSADrawNav() {
                 &gl_point.z
                 );
 
-        XSARenderShapeDiamond(gl_point.x, gl_point.y + 16.0, gl_point.z);
+		const double clamp_range = 1.0;
+		const double scale_reduce = 0.75;
+		// set an initial scale for drawing points and text
+		double scale = clamp_range;
+		// if point is greater than 'clamp_range' away
+		if(range > clamp_range) {
+			// using the range of the point as a way to set a drawing scale ...
+			// given the range of the point, take a fraction the distance to the point,
+			// after the 'clamp_range' and add that to the 'clamp_range', as the scale
+			scale = clamp_range + ((range - clamp_range)*scale_reduce);
+		}
+
+        XSARenderShapeDiamond(gl_point.x, gl_point.y + 16.0, gl_point.z,scale);
 
         if (ptr_nav->xsaType != xsaNavTypeFix && detail_draw_flags != 0) {
             // nav name,nav id,frequency,distance etc ...
@@ -313,78 +301,50 @@ void XSADrawNav() {
                 strcat(buf, ")");
             }
 
-            double nav_scale_factor = range * 0.15;
-            if (nav_scale_factor < 0.08) {
-                nav_scale_factor = 0.08;
-            }
-            gl_point.y = gl_point.y + 32.0;
-            XSADrawString(gl_point, nav_scale_factor, (unsigned char*) buf);
+			const double scale_reduce_text = 0.10;
+            gl_point.y = gl_point.y + (32.0*scale);
+            XSADrawString(gl_point,
+							dr.v.ViewHdg,
+							scale*scale_reduce_text,
+							(unsigned char*)buf);
         }
     }
-}
-
-void XSADrawString(d_XSA3DPoint translate,double scale,const unsigned char* string) {
-    int length = glutStrokeLength(GLUT_STROKE_MONO_ROMAN, string);
-    glPushMatrix();
-        glTranslated(translate.x, translate.y, translate.z);
-        glScaled(scale, scale, scale);
-        glRotatef(-view_heading, 0.0, 1.0, 0.0);
-        glTranslated(-(length / 2), 0.0, 0.0);
-        glutStrokeString(GLUT_STROKE_MONO_ROMAN, string);
-    glPopMatrix();
 }
 
 PLUGIN_API int XPluginStart(char* outName, char* outSig, char* outDesc) {
     strcpy(outName, "xsa-ng");
     strcpy(outSig, "com.dsrts.xsa-ng");
     strcpy(outDesc, "XSA-NG v1.1 (tpelton@gmail.com) built : "__DATE__);
-
-    dr_X = XPLMFindDataRef("sim/flightmodel/position/local_x");
-    dr_Y = XPLMFindDataRef("sim/flightmodel/position/local_y");
-    dr_Z = XPLMFindDataRef("sim/flightmodel/position/local_z");
-
-    dr_Lat = XPLMFindDataRef("sim/flightmodel/position/latitude");
-    dr_Lon = XPLMFindDataRef("sim/flightmodel/position/longitude");
-    dr_Elev = XPLMFindDataRef("sim/flightmodel/position/elevation");
-
-    dr_Viz = XPLMFindDataRef("sim/graphics/view/visibility_effective_m");
-
-    dr_ViewHdg = XPLMFindDataRef("sim/graphics/view/view_heading");
-    dr_Psi = XPLMFindDataRef("sim/flightmodel/position/psi");
-
-    dr_RunningTime = XPLMFindDataRef("sim/time/total_running_time_sec");
+    dr.X = XPLMFindDataRef("sim/flightmodel/position/local_x");
+    dr.Y = XPLMFindDataRef("sim/flightmodel/position/local_y");
+    dr.Z = XPLMFindDataRef("sim/flightmodel/position/local_z");
+    dr.cX = XPLMFindDataRef("sim/graphics/view/view_x");
+    dr.cY = XPLMFindDataRef("sim/graphics/view/view_y");
+    dr.cZ = XPLMFindDataRef("sim/graphics/view/view_z");
+    dr.Lat = XPLMFindDataRef("sim/flightmodel/position/latitude");
+    dr.Lon = XPLMFindDataRef("sim/flightmodel/position/longitude");
+    dr.Elev = XPLMFindDataRef("sim/flightmodel/position/elevation");
+    dr.Viz = XPLMFindDataRef("sim/graphics/view/visibility_effective_m");
+    dr.ViewHdg = XPLMFindDataRef("sim/graphics/view/view_heading");
+    dr.Psi = XPLMFindDataRef("sim/flightmodel/position/psi");
+    dr.RunningTime = XPLMFindDataRef("sim/time/total_running_time_sec");
 
     //	details_hot_key_id = XPLMRegisterHotKey(XPLM_VK_F12,xplm_DownFlag,"Toggle Details",key,&details_hot_key_id);
     //	toggle_hot_key_id = XPLMRegisterHotKey(XPLM_VK_F11,xplm_DownFlag,"Toggle Type",key,&toggle_hot_key_id);
 
     XPLMRegisterDrawCallback(XSADraw, xplm_Phase_Objects, 0, NULL);
+
     XSARenderInit();
-
-    menu_root_idx = XPLMAppendMenuItem(XPLMFindPluginsMenu(), "XSA-NG", NULL, 1);
-    menu_root = XPLMCreateMenu("XSA-NG", XPLMFindPluginsMenu(), menu_root_idx, XSAMenuHandler, NULL);
-
-    menu_drawname_idx = XPLMAppendMenuItem(menu_root, "Details : Draw Name", &menu_drawname_idx, 1);
-    XPLMCheckMenuItem(menu_root, menu_drawname_idx, xplm_Menu_Unchecked);
-
-    menu_drawdistance_idx = XPLMAppendMenuItem(menu_root, "Details : Draw Distance", &menu_drawdistance_idx, 1);
-    XPLMCheckMenuItem(menu_root, menu_drawdistance_idx, xplm_Menu_Unchecked);
-
-    menu_drawid_idx = XPLMAppendMenuItem(menu_root, "Details : Draw ID", &menu_drawid_idx, 1);
-    XPLMCheckMenuItem(menu_root, menu_drawid_idx, xplm_Menu_Unchecked);
-
-    XPLMAppendMenuSeparator(menu_root);
-
-    menu_airport_idx = XPLMAppendMenuItem(menu_root, "Draw Airport", &menu_airport_idx, 1);
-    menu_navaid_idx = XPLMAppendMenuItem(menu_root, "Draw NAVAID", &menu_navaid_idx, 1);
-    menu_fix_idx = XPLMAppendMenuItem(menu_root, "Draw Fix", &menu_fix_idx, 1);
-    menu_civil_idx = XPLMAppendMenuItem(menu_root, "Draw Civil", &menu_civil_idx, 1);
-    menu_terrain_idx = XPLMAppendMenuItem(menu_root, "Draw Terrain", &menu_terrain_idx, 1);
-    menu_municipal_idx = XPLMAppendMenuItem(menu_root, "Draw Municipal", &menu_municipal_idx, 1);
-
-    menuItemSyncState();
+    XSAMenuInit();
 
     return 1;
 }
+
+PLUGIN_API void	XPluginStop(void) {}
+
+PLUGIN_API int XPluginEnable(void) { return 1; }
+
+PLUGIN_API void XPluginDisable(void) {}
 
 PLUGIN_API void XPluginReceiveMessage(XPLMPluginID inFromWho, long inMessage, void* inParam) {
     if (inFromWho == XPLM_PLUGIN_XPLANE) {
@@ -398,65 +358,6 @@ PLUGIN_API void XPluginReceiveMessage(XPLMPluginID inFromWho, long inMessage, vo
     }
 }
 
-PLUGIN_API void	XPluginStop(void) {}
-PLUGIN_API int XPluginEnable(void) { return 1; }
-PLUGIN_API void XPluginDisable(void) {
-}
-
-void menuItemSyncState() {
-    menuItemSyncToggle(menu_drawname_idx, &detail_draw_flags, DETAILS_DRAW_NAME);
-    menuItemSyncToggle(menu_drawdistance_idx, &detail_draw_flags, DETAILS_DRAW_DISTANCE);
-    menuItemSyncToggle(menu_drawid_idx, &detail_draw_flags, DETAILS_DRAW_ID);
-    menuItemSyncToggle(menu_airport_idx, &draw_flags, xsaNavTypeAirport);
-    menuItemSyncToggle(menu_navaid_idx, &draw_flags, xsaNavTypeVOR);
-    menuItemSyncToggle(menu_fix_idx, &draw_flags, xsaNavTypeFix);
-    menuItemSyncToggle(menu_municipal_idx, &draw_flags, xsaNavTypeUSGSMunicipal);
-    menuItemSyncToggle(menu_civil_idx, &draw_flags, xsaNavTypeUSGSCivil);
-    menuItemSyncToggle(menu_terrain_idx, &draw_flags, xsaNavTypeUSGSTerrain);
-}
-
-/*
- * set menu item check state to match the flag variable and mask
- */
-void menuItemSyncToggle(int menu_idx, int* pflags, int MASK) {
-    int flags = *pflags;
-    if ((flags & MASK) == MASK) {
-        XPLMCheckMenuItem(menu_root, menu_idx, xplm_Menu_Checked);
-    } else {
-        XPLMCheckMenuItem(menu_root, menu_idx, xplm_Menu_Unchecked);
-    }
-}
-
-void XSAMenuHandler(void* inMenuRef, void* inItemRef) {
-    if (inItemRef == &menu_drawname_idx) {
-        detail_draw_flags = detail_draw_flags ^ DETAILS_DRAW_NAME;
-    }
-    if (inItemRef == &menu_drawdistance_idx) {
-        detail_draw_flags = detail_draw_flags ^ DETAILS_DRAW_DISTANCE;
-    }
-    if (inItemRef == &menu_drawid_idx) {
-        detail_draw_flags = detail_draw_flags ^ DETAILS_DRAW_ID;
-    }
-    if (inItemRef == &menu_airport_idx) {
-        draw_flags = draw_flags ^ xsaNavTypeAirport;
-    }
-    if (inItemRef == &menu_navaid_idx) {
-        draw_flags = draw_flags ^ xsaNavTypeVOR;
-    }
-    if (inItemRef == &menu_fix_idx) {
-        draw_flags = draw_flags ^ xsaNavTypeFix;
-    }
-    if (inItemRef == &menu_municipal_idx) {
-        draw_flags = draw_flags ^ xsaNavTypeUSGSMunicipal;
-    }
-    if (inItemRef == &menu_civil_idx) {
-        draw_flags = draw_flags ^ xsaNavTypeUSGSCivil;
-    }
-    if (inItemRef == &menu_terrain_idx) {
-        draw_flags = draw_flags ^ xsaNavTypeUSGSTerrain;
-    }
-    menuItemSyncState();
-}
 /********************
  * utilities
  *******************/

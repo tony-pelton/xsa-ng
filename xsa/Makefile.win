@@ -1,7 +1,7 @@
 CC+ = g++
 CC = gcc
 #
-XPLOBJ  = xsa-ng.o xsa-ng-render.o xsa-nav.o fortify.o freeglut_font.o freeglut_stroke_mono_roman.o freeglut_stroke_roman.o sqlite3.o
+XPLOBJ  = xsa-ng.o xsa-ng-render.o xsa-nav.o xsa-menu.o fortify.o freeglut_font.o freeglut_stroke_mono_roman.o freeglut_stroke_roman.o sqlite3.o
 XPLBIN  = xsa-ng-win.xpl
 XPLLIBS = -lXPLM -lopengl32
 XPLLIBSDIR = -L /s/lib/XPSDK201/Libraries/Win/
@@ -49,6 +49,9 @@ xsa-ng-render.o: xsa-ng-render.cpp
 
 xsa-nav.o: xsa-nav.cpp
 	$(CC+) -c xsa-nav.cpp -o xsa-nav.o $(CFLAGS)
+
+xsa-menu.o: xsa-menu.cpp
+	$(CC+) -c xsa-menu.cpp -o xsa-menu.o $(CFLAGS)
 
 fortify.o: fortify.cpp
 	$(CC+) -c fortify.cpp -o fortify.o $(CFLAGS)

@@ -37,7 +37,7 @@ $(DATABIN): $(DATAOBJ)
 	$(CC+) $(DATAOBJ) -o $(DATABIN) $(DATALIBS) $(DATALIBSDIR)
 
 $(XPLBIN): $(XPLOBJ)
-	$(CC+) -shared -o $(XPLBIN) $(XPLLIBS) $(XPLOBJ)
+	$(CC+) -shared -o $(XPLBIN) $(XPLOBJ) $(XPLLIBS)
 	# strip $(XPLBIN)
 
 xsa-ng.o: xsa-ng.cpp

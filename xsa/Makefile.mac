@@ -2,9 +2,9 @@ CC+ = g++
 CC = gcc
 #
 XPLOBJ  = xsa-ng.o xsa-ng-render.o xsa-nav.o xsa-menu.o fortify.o freeglut_font.o freeglut_stroke_mono_roman.o freeglut_stroke_roman.o sqlite3.o
-XPLBIN  = xsa-ng-win.xpl
+XPLBIN  = xsa-ng-mac.xpl
 XPLLIBS = -framework OpenGL
-XPLLIBSDIR = -L /Users/tpelton/src/lib/XPSDK201/Libraries/Mac/
+XPLLIBSDIR = -L /Users/tpelton/Desktop/X-Plane\ 9\ Demo/Resources/plugins
 XPLINCS = -I/Users/tpelton/src/lib/XPSDK201/CHeaders/XPLM -I./sqlite
 XPLDEF = xsa-ng.def
 #
@@ -14,12 +14,7 @@ DATALIBS =
 DATAINCS = -I ./sqlite
 DATALIBSDIR =
 #
-# CFLAGS = -Wall -O2 $(INCS) -s -D IBM -D FORTIFY
 CFLAGS = -v -Wall -O2 $(XPLINCS) -s -DIBM=0 -DAPL=1 -DLIN=0
-# CFLAGS = -Wall -O3 -fomit-frame-pointer -ffast-math -mno-cygwin -march=i486 $(INCS) -s -D IBM
-# CFLAGS = -Wall -pipe -mms-bitfields -march=i686 -O2 $(INCS) -s -D IBM
-# CFLAGS = -Wall -O3 -pipe -mms-bitfields -malign-double -fno-exceptions -ffast-math -march=pentium -fno-builtin $(INCS) -s -D IBM
-# INSTALL_DIR = "/r/Games/X-Plane 8.64/Resources/plugins"
 INSTALL_DIR = "/r/Games/X-Plane 9.X/Resources/plugins"
 
 all: $(DATABIN) $(XPLBIN)
@@ -37,7 +32,7 @@ $(DATABIN): $(DATAOBJ)
 	$(CC+) $(DATAOBJ) -o $(DATABIN) $(DATALIBS) $(DATALIBSDIR)
 
 $(XPLBIN): $(XPLOBJ)
-	$(CC+) -shared -o $(XPLBIN) $(XPLOBJ) $(XPLLIBS)
+	$(CC+) -o $(XPLBIN) -dynamic -Wl,-undefined,dynamic_lookup $(XPLOBJ) $(XPLLIBS)
 	# strip $(XPLBIN)
 
 xsa-ng.o: xsa-ng.cpp

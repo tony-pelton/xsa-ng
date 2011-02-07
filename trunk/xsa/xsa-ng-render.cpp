@@ -23,15 +23,16 @@ void XSARenderInit() {
 	free(points);
 }
 
-void XSARenderShapeDiamond(double x, double y, double z,double scale) {
-	XSARenderShape(SHAPE_LIST_DIAMOND,x,y,z,scale);
+void XSARenderShapeDiamond(const d_XSA3DPoint p) {
+	XSARenderShape(SHAPE_LIST_DIAMOND,p);
 }
 
-void XSARenderShape(GLuint list,double x, double y, double z,double scale) {
+void XSARenderShape(GLuint list,const d_XSA3DPoint p) {
 	glPushMatrix();
-		glTranslated(x,y,z);
+		glColor3f(p.r, p.g, p.b);
+		glTranslated(p.x,p.y,p.z);
 		glRotatef(0.0,0.0,1.0,0.0);
-    	glScaled(scale,scale,scale);
+    	glScaled(p.scale,p.scale,p.scale);
 		glCallList(SHAPE_LIST_DIAMOND);
  	glPopMatrix();
 }

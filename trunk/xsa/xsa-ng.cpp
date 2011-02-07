@@ -129,135 +129,104 @@ void XSADrawState() {
 }
 
 void XSADrawNav() {
+    list_count = 0;
     double max_viz = (dr.v.Viz + XSA_NAUTICAL_MILE_METERS);
     double max_viz_nm = max_viz / XSA_NAUTICAL_MILE_METERS;
-    d_XSA3DPoint gl_point;
-    navinfo_t stack_nav;
 
-    list_count = 0;
-
-    node_navinfo* list = XSAGetNavDBList();
+    node_navinfo* p_nin = XSAGetNavDBList();
 
     if (debug_dump) {
         XPLMDebugString("XSADrawNav() : fetched list\n");
-        if (list) {
+        if (p_nin) {
             XPLMDebugString("XSADrawNav() : list is NOT null\n");
         }
     }
-    while (list->node != NULL) {
-        list_count++;
+    while (p_nin->node != NULL) {
 
-        navinfo_t* ptr_nav = list->node;
+        list_count++;
+        navinfo_t* p_ni = p_nin->node;
+        p_nin = p_nin->next;
+
+		// draw flag for this type on ?
+		if(!((p_ni->xsaType & draw_flags) == p_ni->xsaType)) { continue; }
+		
         if (debug_dump) {
             char s[1024];
-            sprintf(s, "XSADrawNav() : processing nav name %s type %i\n", ptr_nav->name, ptr_nav->xsaType);
+            sprintf(s, "XSADrawNav() : processing nav name %s type %i\n", p_ni->name, p_ni->xsaType);
             XPLMDebugString(s);
         }
-        list = list->next;
 
         // reload lat/lon for moving targets ...
-        if (ptr_nav->xsaType == xsaNavTypeShip) {
-            XSALoadNavRef(ptr_nav->ref, ptr_nav);
+        if (p_ni->xsaType == xsaNavTypeShip) {
+            XSALoadNavRef(p_ni->ref, p_ni);
         }
 
+		// distance calculation from plane to point
         d_XSAWorldPoint nav_point;
-        nav_point.lat = ptr_nav->lat;
-        nav_point.lon = ptr_nav->lon;
-        d_XSAWorldPoint point;
-        point.height = dr.v.Elev;
-        point.lat = dr.v.Lat;
-        point.lon = dr.v.Lon;
-        double range = XSADistance(nav_point, point, 'N');
-
+        nav_point.lat = p_ni->lat;
+        nav_point.lon = p_ni->lon;
+        d_XSAWorldPoint vantage_point;
+        vantage_point.lat = dr.v.Lat;
+        vantage_point.lon = dr.v.Lon;
+        double range = XSADistance(nav_point, vantage_point, 'N');
+		// no need to draw point, if we can't see it given viz
         if (range > max_viz_nm) {
             if (debug_dump) {
                 char s[1024];
-                sprintf(s, "XSADrawNav() : <> range for nav name %s type %i\n", ptr_nav->name, ptr_nav->xsaType);
+                sprintf(s, "XSADrawNav() : <> range for nav name %s type %i\n", p_ni->name, p_ni->xsaType);
                 XPLMDebugString(s);
             }
             continue;
         }
 
-        // clean on stack nav struct, in case ...
-        memset(&stack_nav, 0, sizeof (navinfo_t));
-
-        // glColor3f(0.0, 0.0, 1.0); // blue
-        // glColor3f(0.0,1.0,0.0); // green
-        switch (ptr_nav->xsaType) {
+		d_XSA3DPoint gl_point;
+        switch (p_ni->xsaType) {
             case xsaNavTypeUSGSCivil:
-                if (!((draw_flags & xsaNavTypeUSGSCivil) == xsaNavTypeUSGSCivil)) {
-                    continue;
-                }
-                glColor3f(0.0, 1.0, 0.0); // green
-                break;
-
             case xsaNavTypeUSGSMunicipal:
-                if (!((draw_flags & xsaNavTypeUSGSMunicipal) == xsaNavTypeUSGSMunicipal)) {
-                    continue;
-                }
-                glColor3f(0.0, 1.0, 0.0); // green
-                break;
-
             case xsaNavTypeUSGSTerrain:
-                if (!((draw_flags & xsaNavTypeUSGSTerrain) == xsaNavTypeUSGSTerrain)) {
-                    continue;
-                }
-                glColor3f(0.0, 1.0, 0.0); // green
+				gl_point.r = 0.0;
+				gl_point.g = 1.0;
+				gl_point.b = 0.0;
                 break;
 
             case xsaNavTypeAirport:
-                if (!((draw_flags & xsaNavTypeAirport) == xsaNavTypeAirport)) {
-                    continue;
-                }
-                glColor3f(1.0, 0.0, 0.0); // red
+			case xsaNavTypeHelipad:
+			case xsaNavTypeSeaport:
+				gl_point.r = 1.0;
+				gl_point.g = 0.0;
+				gl_point.b = 0.0;				
                 break;
 
             case xsaNavTypeVOR:
-                if (!((draw_flags & xsaNavTypeVOR) == xsaNavTypeVOR)) {
-                    continue;
-                }
-                glColor3f(1.0, 0.0, 1.0); // magenta
-                break;
-
             case xsaNavTypeShip:
-                if (!((draw_flags & xsaNavTypeVOR) == xsaNavTypeVOR)) {
-                    continue;
-                }
-                glColor3f(1.0, 0.0, 1.0); // magenta
-                break;
-
             case xsaNavTypeNDB:
-                if (!((draw_flags & xsaNavTypeVOR) == xsaNavTypeVOR)) {
-                    continue;
-                }
-                glColor3f(1.0, 0.0, 1.0); // magenta
+				// magenta
+				gl_point.r = 1.0;
+				gl_point.g = 0.0;
+				gl_point.b = 1.0;
                 break;
 
             case xsaNavTypeFix:
-                if (!((draw_flags & xsaNavTypeFix) == xsaNavTypeFix)) {
-                    continue;
-                }
-                if (ptr_nav->height < point.height) {
-                    memcpy(&stack_nav, ptr_nav, sizeof (navinfo_t));
-                    stack_nav.height = point.height;
-                    ptr_nav = &stack_nav;
-                }
-                glColor3f(0.0, 0.0, 1.0); // blue
+				// fixes will render at the same height as the users plane
+				p_ni->height = dr.v.Elev;
+				gl_point.r = 0.0;
+				gl_point.g = 0.0;
+				gl_point.b = 1.0;
                 break;
 
             default:
                 continue;
         }
-
         XPLMWorldToLocal(
-                ptr_nav->lat,
-                ptr_nav->lon,
-                ptr_nav->height,
+                p_ni->lat,
+                p_ni->lon,
+                p_ni->height,
                 &gl_point.x,
                 &gl_point.y,
                 &gl_point.z
                 );
-
+		gl_point.y += 16.0;
+		
 		const double clamp_range = 1.0;
 		const double scale_reduce = 0.75;
 		// set an initial scale for drawing points and text
@@ -269,10 +238,11 @@ void XSADrawNav() {
 			// after the 'clamp_range' and add that to the 'clamp_range', as the scale
 			scale = clamp_range + ((range - clamp_range)*scale_reduce);
 		}
+		gl_point.scale = scale;
 
-        XSARenderShapeDiamond(gl_point.x, gl_point.y + 16.0, gl_point.z,scale);
+        XSARenderShapeDiamond(gl_point);
 
-        if (ptr_nav->xsaType != xsaNavTypeFix && detail_draw_flags != 0) {
+        if (p_ni->xsaType != xsaNavTypeFix && detail_draw_flags != 0) {
             // nav name,nav id,frequency,distance etc ...
             static char* buf = (char*) malloc(1024 * sizeof (unsigned char));
             memset(buf, 0, 1024 * sizeof (unsigned char));
@@ -280,14 +250,14 @@ void XSADrawNav() {
             static char* bufbuf = (char*) malloc(5 * sizeof (char));
 
             if ((detail_draw_flags & DETAILS_DRAW_NAME) == DETAILS_DRAW_NAME) {
-                strcat(buf, ptr_nav->name);
+                strcat(buf, p_ni->name);
             }
 
             if ((detail_draw_flags & DETAILS_DRAW_ID) == DETAILS_DRAW_ID) {
                 if (strlen(buf) > 0) {
                     strcat(buf, " ");
                 }
-                strcat(buf, ptr_nav->id);
+                strcat(buf, p_ni->id);
             }
 
             if ((detail_draw_flags & DETAILS_DRAW_DISTANCE) == DETAILS_DRAW_DISTANCE) {
@@ -314,7 +284,7 @@ void XSADrawNav() {
 PLUGIN_API int XPluginStart(char* outName, char* outSig, char* outDesc) {
     strcpy(outName, "xsa-ng");
     strcpy(outSig, "com.dsrts.xsa-ng");
-    strcpy(outDesc, "XSA-NG v1.1 (tpelton@gmail.com) built : "__DATE__);
+    strcpy(outDesc, "XSA-NG (tpelton@gmail.com) built : "__DATE__);
     dr.X = XPLMFindDataRef("sim/flightmodel/position/local_x");
     dr.Y = XPLMFindDataRef("sim/flightmodel/position/local_y");
     dr.Z = XPLMFindDataRef("sim/flightmodel/position/local_z");

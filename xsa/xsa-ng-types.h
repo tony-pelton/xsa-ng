@@ -51,6 +51,10 @@ typedef struct {
   double x;
   double y;
   double z;
+  double scale;
+  double r;
+  double g;
+  double b;
 } d_XSA3DPoint;
 
 typedef struct {

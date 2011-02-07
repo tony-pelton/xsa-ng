@@ -85,9 +85,13 @@ void XSAMenuHandler(void* inMenuRef, void* inItemRef) {
     }
     if (inItemRef == &menu_airport_idx) {
         draw_flags = draw_flags ^ xsaNavTypeAirport;
+		draw_flags = draw_flags ^ xsaNavTypeHelipad;
+		draw_flags = draw_flags ^ xsaNavTypeSeaport;
     }
     if (inItemRef == &menu_navaid_idx) {
         draw_flags = draw_flags ^ xsaNavTypeVOR;
+		draw_flags = draw_flags ^ xsaNavTypeNDB;
+		draw_flags = draw_flags ^ xsaNavTypeShip;
     }
     if (inItemRef == &menu_fix_idx) {
         draw_flags = draw_flags ^ xsaNavTypeFix;

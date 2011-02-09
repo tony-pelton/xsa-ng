@@ -179,6 +179,7 @@ void XSADrawNav() {
             continue;
         }
 
+		// not memset()'ing this. i think this is ok, since i'm assigning all attributes a value
 		d_XSA3DPoint gl_point;
         switch (p_ni->xsaType) {
             case xsaNavTypeUSGSCivil:
@@ -240,7 +241,7 @@ void XSADrawNav() {
 		}
 		gl_point.scale = scale;
 
-        XSARenderShapeDiamond(gl_point);
+        XSARenderShapeDiamond(&gl_point);
 
         if (p_ni->xsaType != xsaNavTypeFix && detail_draw_flags != 0) {
             // nav name,nav id,frequency,distance etc ...

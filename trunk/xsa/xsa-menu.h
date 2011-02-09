@@ -14,8 +14,10 @@
 #define DETAILS_DRAW_ID 2
 #define DETAILS_DRAW_DISTANCE 4
 
-extern int draw_flags;
-extern int detail_draw_flags;
+typedef struct _XSAMenu {
+	int draw_flags;
+	int detail_draw_flags;
+};
 
 void XSAMenuInit();
 

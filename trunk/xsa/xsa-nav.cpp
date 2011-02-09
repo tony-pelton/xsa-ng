@@ -17,9 +17,8 @@
 double deg2rad(double);
 double rad2deg(double);
 
-d_XSAWorldPoint db_center;
-
-node_navinfo* navlist = NULL;
+static d_XSAWorldPoint db_center;
+static node_navinfo* navlist = NULL;
 
 void XSALoadNavRef(XPLMNavRef ref, navinfo_t* nav) {
     XPLMGetNavAidInfo(

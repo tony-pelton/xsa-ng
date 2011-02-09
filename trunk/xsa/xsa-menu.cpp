@@ -5,8 +5,7 @@
 #include "xsa-menu.h"
 #include "xsa-ng-types.h"
 
-int draw_flags = 0;
-int detail_draw_flags = 0;
+_XSAMenu XSAMenu;
 
 static XPLMMenuID menu_root = NULL;
 static int menu_root_idx = 0;
@@ -21,26 +20,25 @@ static int menu_terrain_idx = 0;
 static int menu_municipal_idx = 0;
 
 static void menuItemSyncState();
-static void menuItemSyncToggle(int,int*,int MASK);
+static void menuItemSyncToggle(int,int,int MASK);
 static void XSAMenuHandler(void*,void*);
 
 void menuItemSyncState() {
-    menuItemSyncToggle(menu_drawname_idx, &detail_draw_flags, DETAILS_DRAW_NAME);
-    menuItemSyncToggle(menu_drawdistance_idx, &detail_draw_flags, DETAILS_DRAW_DISTANCE);
-    menuItemSyncToggle(menu_drawid_idx, &detail_draw_flags, DETAILS_DRAW_ID);
-    menuItemSyncToggle(menu_airport_idx, &draw_flags, xsaNavTypeAirport);
-    menuItemSyncToggle(menu_navaid_idx, &draw_flags, xsaNavTypeVOR);
-    menuItemSyncToggle(menu_fix_idx, &draw_flags, xsaNavTypeFix);
-    menuItemSyncToggle(menu_municipal_idx, &draw_flags, xsaNavTypeUSGSMunicipal);
-    menuItemSyncToggle(menu_civil_idx, &draw_flags, xsaNavTypeUSGSCivil);
-    menuItemSyncToggle(menu_terrain_idx, &draw_flags, xsaNavTypeUSGSTerrain);
+    menuItemSyncToggle(menu_drawname_idx, XSAMenu.detail_draw_flags, DETAILS_DRAW_NAME);
+    menuItemSyncToggle(menu_drawdistance_idx, XSAMenu.detail_draw_flags, DETAILS_DRAW_DISTANCE);
+    menuItemSyncToggle(menu_drawid_idx, XSAMenu.detail_draw_flags, DETAILS_DRAW_ID);
+    menuItemSyncToggle(menu_airport_idx, XSAMenu.draw_flags, xsaNavTypeAirport);
+    menuItemSyncToggle(menu_navaid_idx, XSAMenu.draw_flags, xsaNavTypeVOR);
+    menuItemSyncToggle(menu_fix_idx, XSAMenu.draw_flags, xsaNavTypeFix);
+    menuItemSyncToggle(menu_municipal_idx, XSAMenu.draw_flags, xsaNavTypeUSGSMunicipal);
+    menuItemSyncToggle(menu_civil_idx, XSAMenu.draw_flags, xsaNavTypeUSGSCivil);
+    menuItemSyncToggle(menu_terrain_idx, XSAMenu.draw_flags, xsaNavTypeUSGSTerrain);
 }
 
 /*
  * set menu item check state to match the flag variable and mask
  */
-void menuItemSyncToggle(int menu_idx, int* pflags, int MASK) {
-    int flags = *pflags;
+void menuItemSyncToggle(int menu_idx, int flags, int MASK) {
     if ((flags & MASK) == MASK) {
         XPLMCheckMenuItem(menu_root, menu_idx, xplm_Menu_Checked);
     } else {
@@ -75,35 +73,35 @@ void XSAMenuInit() {
 
 void XSAMenuHandler(void* inMenuRef, void* inItemRef) {
     if (inItemRef == &menu_drawname_idx) {
-        detail_draw_flags = detail_draw_flags ^ DETAILS_DRAW_NAME;
+        XSAMenu.detail_draw_flags = XSAMenu.detail_draw_flags ^ DETAILS_DRAW_NAME;
     }
     if (inItemRef == &menu_drawdistance_idx) {
-        detail_draw_flags = detail_draw_flags ^ DETAILS_DRAW_DISTANCE;
+        XSAMenu.detail_draw_flags = XSAMenu.detail_draw_flags ^ DETAILS_DRAW_DISTANCE;
     }
     if (inItemRef == &menu_drawid_idx) {
-        detail_draw_flags = detail_draw_flags ^ DETAILS_DRAW_ID;
+        XSAMenu.detail_draw_flags = XSAMenu.detail_draw_flags ^ DETAILS_DRAW_ID;
     }
     if (inItemRef == &menu_airport_idx) {
-        draw_flags = draw_flags ^ xsaNavTypeAirport;
-		draw_flags = draw_flags ^ xsaNavTypeHelipad;
-		draw_flags = draw_flags ^ xsaNavTypeSeaport;
+        XSAMenu.draw_flags = XSAMenu.draw_flags ^ xsaNavTypeAirport;
+		XSAMenu.draw_flags = XSAMenu.draw_flags ^ xsaNavTypeHelipad;
+		XSAMenu.draw_flags = XSAMenu.draw_flags ^ xsaNavTypeSeaport;
     }
     if (inItemRef == &menu_navaid_idx) {
-        draw_flags = draw_flags ^ xsaNavTypeVOR;
-		draw_flags = draw_flags ^ xsaNavTypeNDB;
-		draw_flags = draw_flags ^ xsaNavTypeShip;
+        XSAMenu.draw_flags = XSAMenu.draw_flags ^ xsaNavTypeVOR;
+		XSAMenu.draw_flags = XSAMenu.draw_flags ^ xsaNavTypeNDB;
+		XSAMenu.draw_flags = XSAMenu.draw_flags ^ xsaNavTypeShip;
     }
     if (inItemRef == &menu_fix_idx) {
-        draw_flags = draw_flags ^ xsaNavTypeFix;
+        XSAMenu.draw_flags = XSAMenu.draw_flags ^ xsaNavTypeFix;
     }
     if (inItemRef == &menu_municipal_idx) {
-        draw_flags = draw_flags ^ xsaNavTypeUSGSMunicipal;
+        XSAMenu.draw_flags = XSAMenu.draw_flags ^ xsaNavTypeUSGSMunicipal;
     }
     if (inItemRef == &menu_civil_idx) {
-        draw_flags = draw_flags ^ xsaNavTypeUSGSCivil;
+        XSAMenu.draw_flags = XSAMenu.draw_flags ^ xsaNavTypeUSGSCivil;
     }
     if (inItemRef == &menu_terrain_idx) {
-        draw_flags = draw_flags ^ xsaNavTypeUSGSTerrain;
+        XSAMenu.draw_flags = XSAMenu.draw_flags ^ xsaNavTypeUSGSTerrain;
     }
     menuItemSyncState();
 }

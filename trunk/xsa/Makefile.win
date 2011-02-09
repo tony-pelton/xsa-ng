@@ -8,12 +8,6 @@ XPLLIBSDIR = -L /s/lib/XPSDK201/Libraries/Win/
 XPLINCS = -I /s/lib/XPSDK201/CHeaders/XPLM/ -I ./sqlite
 XPLDEF = xsa-ng.def
 #
-DATAOBJ  = data.o sqlite3.o
-DATABIN = data.exe
-DATALIBS =
-DATAINCS = -I ./sqlite
-DATALIBSDIR =
-#
 # CFLAGS = -Wall -O2 $(INCS) -s -D IBM -D FORTIFY
 CFLAGS = -Wall -O2 $(XPLINCS) -s -DIBM=1 -DAPL=0 -DLIN=0
 # CFLAGS = -Wall -O3 -fomit-frame-pointer -ffast-math -mno-cygwin -march=i486 $(INCS) -s -D IBM
@@ -22,22 +16,17 @@ CFLAGS = -Wall -O2 $(XPLINCS) -s -DIBM=1 -DAPL=0 -DLIN=0
 # INSTALL_DIR = "/r/Games/X-Plane 8.64/Resources/plugins"
 INSTALL_DIR = "/r/Games/X-Plane 9.X/Resources/plugins"
 
-all: $(DATABIN) $(XPLBIN)
+all: $(XPLBIN)
 
 clean:
 	rm -f $(XPLOBJ) $(XPLBIN)
-	rm -f $(DATAOBJ) $(DATABIN)
 	rm -f $(INSTALL_DIR)/$(XPLBIN)
 	rm -f $(XPLDEF)
 
 install:
 	cp $(XPLBIN) $(INSTALL_DIR)
 
-$(DATABIN): $(DATAOBJ)
-	$(CC+) $(DATAOBJ) -o $(DATABIN) $(DATALIBS) $(DATALIBSDIR)
-
 $(XPLBIN): $(XPLOBJ)
-	# dllwrap -v --mno-cygwin --driver-name=$(CC+) --dllname=$(XPLBIN) $(XPLOBJ) $(XPLLIBS)
 	$(CC+) -shared -o $(XPLBIN) -Wl,--out-implib,$(XPLBIN) $(XPLOBJ) $(XPLLIBS) $(XPLLIBSDIR)
 	# strip $(XPLBIN)
 
@@ -67,6 +56,3 @@ freeglut_stroke_roman.o: freeglut_stroke_roman.c
 
 sqlite3.o: sqlite/sqlite3.c
 	$(CC) -c sqlite/sqlite3.c -o sqlite3.o $(CFLAGS)
-
-data.o: data.cpp
-	$(CC+) -c data.cpp -o data.o $(CFLAGS)

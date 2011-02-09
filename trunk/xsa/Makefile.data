@@ -1,0 +1,24 @@
+CC   = gcc
+CC+  = g++
+OBJ  = fortify.o data.o sqlite3.o
+LIBS = -L /s/lib/XPSDK201/Libraries/Win/
+INCS = -I /s/lib/XPSDK201/CHeaders/XPLM/ -I ./sqlite
+BIN  = data.exe
+CFLAGS = -Wall -O2 $(INCS) -s -DIBM=1 -DFORTIFY=1
+
+all: $(BIN)
+
+clean:
+	rm -f $(OBJ) $(BIN)
+
+$(BIN): $(OBJ)
+	$(CC+) $(OBJ) -o $(BIN) $(LIBS) -lXPLM -lglut32 -lopengl32 -lglu32
+
+main.o: main.cpp
+	$(CC) -c data.cpp -o data.o $(CFLAGS)
+
+fortify.o: fortify.cpp
+	$(CC+) -c fortify.cpp -o fortify.o $(CFLAGS)
+
+sqlite3.o: sqlite/sqlite3.c
+	$(CC) -c sqlite/sqlite3.c -o sqlite3.o $(CFLAGS)

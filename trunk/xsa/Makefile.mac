@@ -8,28 +8,18 @@ XPLLIBSDIR = -L /Users/tpelton/Desktop/X-Plane\ 9\ Demo/Resources/plugins
 XPLINCS = -I/Users/tpelton/src/lib/XPSDK201/CHeaders/XPLM -I./sqlite
 XPLDEF = xsa-ng.def
 #
-DATAOBJ  = data.o sqlite3.o
-DATABIN = data.exe
-DATALIBS =
-DATAINCS = -I ./sqlite
-DATALIBSDIR =
-#
 CFLAGS = -v -Wall -O2 $(XPLINCS) -s -DIBM=0 -DAPL=1 -DLIN=0
 INSTALL_DIR = "/r/Games/X-Plane 9.X/Resources/plugins"
 
-all: $(DATABIN) $(XPLBIN)
+all: $(XPLBIN)
 
 clean:
 	rm -f $(XPLOBJ) $(XPLBIN)
-	rm -f $(DATAOBJ) $(DATABIN)
 	rm -f $(INSTALL_DIR)/$(XPLBIN)
 	rm -f $(XPLDEF)
 
 install:
 	cp $(XPLBIN) $(INSTALL_DIR)
-
-$(DATABIN): $(DATAOBJ)
-	$(CC+) $(DATAOBJ) -o $(DATABIN) $(DATALIBS) $(DATALIBSDIR)
 
 $(XPLBIN): $(XPLOBJ)
 	$(CC+) -o $(XPLBIN) -Wl,-bundle,-undefined,dynamic_lookup $(XPLOBJ) $(XPLLIBS)
@@ -61,6 +51,3 @@ freeglut_stroke_roman.o: freeglut_stroke_roman.c
 
 sqlite3.o: sqlite/sqlite3.c
 	$(CC) -c sqlite/sqlite3.c -o sqlite3.o $(CFLAGS)
-
-data.o: data.cpp
-	$(CC+) -c data.cpp -o data.o $(CFLAGS)

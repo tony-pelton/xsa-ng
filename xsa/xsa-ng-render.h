@@ -17,8 +17,8 @@
 #include "xsa-ng-types.h"
 
 void XSARenderInit();
-void XSARenderShape(GLuint,const d_XSA3DPoint);
-void XSARenderShapeDiamond(const d_XSA3DPoint);
+void XSARenderShape(GLuint,const d_XSA3DPoint*);
+void XSARenderShapeDiamond(const d_XSA3DPoint*);
 void XSADrawString(d_XSA3DPoint,float,double,const unsigned char*);
 void XSADrawStringHUD(d_XSA3DPoint,float,const unsigned char*);
 

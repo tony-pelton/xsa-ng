@@ -14,12 +14,16 @@
 #define DETAILS_DRAW_ID 2
 #define DETAILS_DRAW_DISTANCE 4
 
-typedef struct _XSAMenu {
+#define XSA_PREFS_COOKIE 1
+
+typedef struct XSAMenu_t {
+	int cookie;
 	int draw_flags;
 	int detail_draw_flags;
 };
 
 void XSAMenuInit();
+void XSAMenuSave();
 
 #endif	/* _XSA_MENU_H */
 

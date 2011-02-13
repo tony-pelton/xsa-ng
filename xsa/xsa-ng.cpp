@@ -21,7 +21,7 @@
 //static XPLMHotKeyID details_hot_key_id = NULL;
 //static XPLMHotKeyID toggle_hot_key_id = NULL;
 
-extern _XSAMenu XSAMenu;
+extern XSAMenu_t XSAMenu;
 
 static struct {
     struct {
@@ -285,6 +285,7 @@ void XSADrawNav() {
 }
 
 PLUGIN_API int XPluginStart(char* outName, char* outSig, char* outDesc) {
+	// XPLMDebugString("xsa-ng XPluginStart()\n");
     strcpy(outName, "xsa-ng");
     strcpy(outSig, "com.dsrts.xsa-ng");
     strcpy(outDesc, "XSA-NG (tpelton@gmail.com) built : "__DATE__);
@@ -313,20 +314,35 @@ PLUGIN_API int XPluginStart(char* outName, char* outSig, char* outDesc) {
     return 1;
 }
 
-PLUGIN_API void	XPluginStop(void) {}
+PLUGIN_API void	XPluginStop(void) {
+	// Fortify_DumpAllMemory();
+	// XPLMDebugString("xsa-ng XPluginStop()\n");
+	XSAMenuSave();
+}
 
-PLUGIN_API int XPluginEnable(void) { return 1; }
+PLUGIN_API int XPluginEnable(void) {
+	// XPLMDebugString("xsa-ng XPluginEnable()\n");
+	return 1;
+}
 
-PLUGIN_API void XPluginDisable(void) {}
+PLUGIN_API void XPluginDisable(void) {
+	// XPLMDebugString("xsa-ng XPluginDisable()\n");
+}
 
 PLUGIN_API void XPluginReceiveMessage(XPLMPluginID inFromWho, long inMessage, void* inParam) {
     if (inFromWho == XPLM_PLUGIN_XPLANE) {
         switch (inMessage) {
             case XPLM_MSG_PLANE_LOADED:
-                if ((int) inParam == XPLM_PLUGIN_XPLANE) {
-                    // XPLMDebugString("plane loaded.\n");
-                    break;
-                }
+				// XPLMDebugString("xsa-ng plane loaded.\n");
+				break;
+				
+			case XPLM_MSG_AIRPORT_LOADED:
+				// XPLMDebugString("xsa-ng airport loaded.\n");
+				break;
+				
+			case XPLM_MSG_SCENERY_LOADED:
+				// XPLMDebugString("xsa-ng scenery loaded.\n");
+				break;
         }
     }
 }
@@ -352,5 +368,4 @@ void dump() {
 	char buf[512];
 	sprintf(buf,"draw count : %d\n",list_count);
 	XPLMDebugString(buf);
-	// Fortify_ListAllMemory();
 }

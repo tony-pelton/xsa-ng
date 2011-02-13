@@ -1,11 +1,13 @@
+#include <stdio.h>
 #include <stdlib.h>
 
 #include <XPLMMenus.h>
+#include <XPLMUtilities.h>
 
 #include "xsa-menu.h"
 #include "xsa-ng-types.h"
 
-_XSAMenu XSAMenu;
+XSAMenu_t XSAMenu;
 
 static XPLMMenuID menu_root = NULL;
 static int menu_root_idx = 0;
@@ -68,7 +70,46 @@ void XSAMenuInit() {
     menu_terrain_idx = XPLMAppendMenuItem(menu_root, "Draw Terrain", &menu_terrain_idx, 1);
     menu_municipal_idx = XPLMAppendMenuItem(menu_root, "Draw Municipal", &menu_municipal_idx, 1);
     
+	XSAMenu.draw_flags = XSAMenu.draw_flags ^ xsaNavTypeAirport;
+	XSAMenu.draw_flags = XSAMenu.draw_flags ^ xsaNavTypeHelipad;
+	XSAMenu.draw_flags = XSAMenu.draw_flags ^ xsaNavTypeSeaport;
+	XSAMenu.draw_flags = XSAMenu.draw_flags ^ xsaNavTypeVOR;
+	XSAMenu.draw_flags = XSAMenu.draw_flags ^ xsaNavTypeNDB;
+	XSAMenu.draw_flags = XSAMenu.draw_flags ^ xsaNavTypeShip;
+	XSAMenu.detail_draw_flags = XSAMenu.detail_draw_flags ^ DETAILS_DRAW_NAME;
+	XSAMenu.detail_draw_flags = XSAMenu.detail_draw_flags ^ DETAILS_DRAW_DISTANCE;
+
+    char prefs_file_name[1024];
+	XPLMGetSystemPath(prefs_file_name);
+	strcat(prefs_file_name, "xsa-ng.dat");
+	FILE* p_f = fopen(prefs_file_name, "rb");
+	if (p_f) {
+		fseek(p_f,0,SEEK_END);
+		if(ftell(p_f) == sizeof(XSAMenu_t)) {
+			rewind(p_f);
+			int cookie = -1;
+			fread(&cookie,1,sizeof(int),p_f);
+			if(cookie = XSA_PREFS_COOKIE) {
+				rewind(p_f);
+				fread(&XSAMenu,1,sizeof(XSAMenu_t),p_f);
+			}
+		}
+		fclose(p_f);
+	}
+	
     menuItemSyncState();
+}
+
+void XSAMenuSave() {
+	XSAMenu.cookie = XSA_PREFS_COOKIE;
+    char prefs_file_name[1024];
+	XPLMGetSystemPath(prefs_file_name);
+	strcat(prefs_file_name, "xsa-ng.dat");
+	FILE* p_f = fopen(prefs_file_name,"wb");
+	if(p_f) {
+		fwrite(&XSAMenu,1,sizeof(XSAMenu_t),p_f);
+		fclose(p_f);
+	}
 }
 
 void XSAMenuHandler(void* inMenuRef, void* inItemRef) {

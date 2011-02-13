@@ -90,7 +90,7 @@ void XSAMenuInit() {
 			rewind(p_f);
 			int cookie = -1;
 			fread(&cookie,1,sizeof(int),p_f);
-			if(cookie = XSA_PREFS_COOKIE) {
+			if(cookie == XSA_PREFS_COOKIE) {
 				rewind(p_f);
 				fread(&XSAMenu,1,sizeof(XSAMenu_t),p_f);
 			}

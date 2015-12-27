@@ -1,5 +1,3 @@
-#include "fortify.h"
-
 #include <stdio.h>
 #include "freeglut.h"
 #include "xsa-ng-render.h"

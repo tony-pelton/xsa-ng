@@ -1,11 +1,12 @@
 CC+ = g++
 CC = gcc
 #
-XPLOBJ  = xsa-ng.o xsa-ng-render.o xsa-nav.o xsa-menu.o fortify.o freeglut_font.o freeglut_stroke_mono_roman.o freeglut_stroke_roman.o sqlite3.o
+# XPLOBJ  = xsa-ng.o xsa-ng-render.o xsa-nav.o xsa-menu.o fortify.o freeglut_font.o freeglut_stroke_mono_roman.o freeglut_stroke_roman.o sqlite3.o
+XPLOBJ  = xsa-ng.o xsa-ng-render.o xsa-nav.o xsa-menu.o freeglut_font.o freeglut_stroke_mono_roman.o freeglut_stroke_roman.o
 XPLBIN  = xsa-ng-win.xpl
-XPLLIBS = -lXPLM -lopengl32
-XPLLIBSDIR = -L /s/lib/XPSDK201/Libraries/Win/
-XPLINCS = -I /s/lib/XPSDK201/CHeaders/XPLM/ -I ./sqlite
+XPLLIBS = -lXPLM_64 -lopengl32
+XPLLIBSDIR = -L /e/XPSDK213/SDK/Libraries/Win/
+XPLINCS = -I /e/XPSDK213/SDK/CHeaders/XPLM/ -I ./sqlite
 XPLDEF = xsa-ng.def
 #
 # CFLAGS = -Wall -O2 $(INCS) -s -D IBM -D FORTIFY
@@ -14,17 +15,19 @@ CFLAGS = -Wall -O2 $(XPLINCS) -s -DIBM=1 -DAPL=0 -DLIN=0
 # CFLAGS = -Wall -pipe -mms-bitfields -march=i686 -O2 $(INCS) -s -D IBM
 # CFLAGS = -Wall -O3 -pipe -mms-bitfields -malign-double -fno-exceptions -ffast-math -march=pentium -fno-builtin $(INCS) -s -D IBM
 # INSTALL_DIR = "/r/Games/X-Plane 8.64/Resources/plugins"
-INSTALL_DIR = "/r/Games/X-Plane 9.X/Resources/plugins"
+INSTALL_DIR = "/c/Program Files (x86)/Steam/SteamApps/common/X-Plane 10/Resources/plugins"
 
 all: $(XPLBIN)
 
 clean:
 	rm -f $(XPLOBJ) $(XPLBIN)
-	rm -f $(INSTALL_DIR)/$(XPLBIN)
 	rm -f $(XPLDEF)
 
 install:
 	cp $(XPLBIN) $(INSTALL_DIR)
+
+uninstall:
+	rm -f $(INSTALL_DIR)/$(XPLBIN)
 
 $(XPLBIN): $(XPLOBJ)
 	$(CC+) -shared -o $(XPLBIN) -Wl,--out-implib,$(XPLBIN) $(XPLOBJ) $(XPLLIBS) $(XPLLIBSDIR)
@@ -42,8 +45,8 @@ xsa-nav.o: xsa-nav.cpp
 xsa-menu.o: xsa-menu.cpp
 	$(CC+) -c xsa-menu.cpp -o xsa-menu.o $(CFLAGS)
 
-fortify.o: fortify.cpp
-	$(CC+) -c fortify.cpp -o fortify.o $(CFLAGS)
+# fortify.o: fortify.cpp
+	# $(CC+) -c fortify.cpp -o fortify.o $(CFLAGS)
 
 freeglut_font.o: freeglut_font.c
 	$(CC+) -c freeglut_font.c -o freeglut_font.o $(CFLAGS)
@@ -54,5 +57,5 @@ freeglut_stroke_mono_roman.o: freeglut_stroke_mono_roman.c
 freeglut_stroke_roman.o: freeglut_stroke_roman.c
 	$(CC+) -c freeglut_stroke_roman.c -o freeglut_stroke_roman.o $(CFLAGS)
 
-sqlite3.o: sqlite/sqlite3.c
-	$(CC) -c sqlite/sqlite3.c -o sqlite3.o $(CFLAGS)
+# sqlite3.o: sqlite/sqlite3.c
+	# $(CC) -c sqlite/sqlite3.c -o sqlite3.o $(CFLAGS)

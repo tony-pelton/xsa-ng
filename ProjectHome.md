@@ -1,17 +1,17 @@
 # 3D visualization plugin for the x-plane flight simulator. #
 
-![http://xsa-ng.googlecode.com/files/xsa-ng-banner.png](http://xsa-ng.googlecode.com/files/xsa-ng-banner.png)
+![xsa-ng-screenshot.png](xsa-ng-screenshot.png)
 
 ## News ##
-  * ## build 49 released 2/5/2011 ##
-    * This release adds some tweaks to the size of the 3D text and glyphs. it is also my first OSX release.
+  * ## updating project after move to github ##
+    * google code was shutting down. moved the project to github, but hadn't really updated it much.
 
 ## **Installing** the plugin. ##
 
   * Download one of the XPL files for your platform.
-    * [r49 \*Windows\*](http://xsa-ng.googlecode.com/files/xsa-ng-win-r49.xpl)
-    * [r49 \*Mac x86\*](http://xsa-ng.googlecode.com/files/xsa-ng-mac-r49.xpl)
-    * **Linux** (_Coming Soon_)
+    * [\*Windows\*](xsa-ng-win.xpl)
+    * [\*Mac x86\*](xsa-ng-mac.xpl)
+
   * Check for, and delete any old copies of the plugin, before copying the new one into place.
     * _The file names in the download section will change between versions._
     * _Having two or more version of the plugin running will have unpredictable results._
@@ -33,7 +33,7 @@ If you want additional functionality with the plugin, you can download and use a
 
 I've provided a 'points' file that uses USGS landmark data.
 
-You can download this file from [xdata.zip](http://xsa-ng.googlecode.com/files/xdata.zip).
+(coming soon) You can download this file from [xdata.zip](xdata.zip).
 
 Unzip the file so that it extracts the 'xdata.dlm` file, and place the file in the root of your x-plane install directory.
 

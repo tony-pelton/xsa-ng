@@ -10,6 +10,8 @@
 ## **Installing** the plugin. ##
 
   * Download an .xpl file for your platform.
+    * _Check 'releases' section on GitHub for pre-built downloads._
+    * _I'm a Windows guy. I don't have a Mac, nor do I run Linux, so you probably won't find builds for those platforms unless someone helps me out. Don't ask._
 
   * Check for, and delete any old copies of the plugin, before copying the new one into place.
     * _The file names in the download section will change between versions._

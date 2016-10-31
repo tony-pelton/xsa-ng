@@ -210,7 +210,6 @@ void XSATouchNavDB(const d_XSAWorldPoint point) {
                 continue;
             }
             s[strlen(s) - 1] = '\0';
-            char* layer = strtok(s, delim);
             navinfo.lat = atof(strtok(NULL, delim));
             navinfo.lon = atof(strtok(NULL, delim));
 

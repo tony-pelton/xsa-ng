@@ -16,7 +16,7 @@
 
 #define XSA_PREFS_COOKIE 1
 
-typedef struct XSAMenu_t {
+struct XSAMenu_t {
 	int cookie;
 	int draw_flags;
 	int detail_draw_flags;

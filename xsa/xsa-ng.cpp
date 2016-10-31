@@ -61,7 +61,6 @@ static bool debug_dump = false;
 static void XSADrawNav();
 static void XSAUpdateState();
 static int XSADraw(XPLMDrawingPhase,int,void*);
-static void key(void*);
 
 int XSADraw(XPLMDrawingPhase inPhase, int inIsBefore, void* inRefcon) {
     XSAUpdateState();
@@ -286,7 +285,7 @@ PLUGIN_API int XPluginStart(char* outName, char* outSig, char* outDesc) {
 	// XPLMDebugString("xsa-ng XPluginStart()\n");
     strcpy(outName, "xsa-ng");
     strcpy(outSig, "com.dsrts.xsa-ng");
-    strcpy(outDesc, "XSA-NG (tpelton@gmail.com) built : "__DATE__);
+    strcpy(outDesc, "XSA-NG (tpelton@gmail.com) built : " __DATE__);
     dr.X = XPLMFindDataRef("sim/flightmodel/position/local_x");
     dr.Y = XPLMFindDataRef("sim/flightmodel/position/local_y");
     dr.Z = XPLMFindDataRef("sim/flightmodel/position/local_z");
@@ -348,19 +347,6 @@ PLUGIN_API void XPluginReceiveMessage(XPLMPluginID inFromWho, long inMessage, vo
 /********************
  * utilities
  *******************/
-void key(void* inRefCon) {
-	/*
-	if(inRefCon == &details_hot_key_id) {
-		toggleDetail();
-	}
-	 */
-    /*
-	if(inRefCon == &toggle_hot_key_id) {
-		toggleType();
-    }
-    */
-
-}
 
 void dump() {
 	char buf[512];

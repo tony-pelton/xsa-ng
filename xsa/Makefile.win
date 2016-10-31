@@ -47,10 +47,10 @@ freeglut_font.o: freeglut_font.c
 	$(CC+) -c freeglut_font.c -o freeglut_font.o $(CFLAGS)
 
 freeglut_stroke_mono_roman.o: freeglut_stroke_mono_roman.c
-	$(CC+) -c freeglut_stroke_mono_roman.c -o freeglut_stroke_mono_roman.o $(CFLAGS)
+	$(CC) -c freeglut_stroke_mono_roman.c -o freeglut_stroke_mono_roman.o $(CFLAGS)
 
 freeglut_stroke_roman.o: freeglut_stroke_roman.c
-	$(CC+) -c freeglut_stroke_roman.c -o freeglut_stroke_roman.o $(CFLAGS)
+	$(CC) -c freeglut_stroke_roman.c -o freeglut_stroke_roman.o $(CFLAGS)
 
 # sqlite3.o: sqlite/sqlite3.c
 	# $(CC) -c sqlite/sqlite3.c -o sqlite3.o $(CFLAGS)

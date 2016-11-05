@@ -1,10 +1,9 @@
 
 #include <string.h>
-
-#include <string.h>
 #include <stdio.h>
 #include <math.h>
 #include <ctype.h>
+#include <stdbool.h>
 
 #include <XPLMNavigation.h>
 #include <XPLMUtilities.h>
@@ -12,13 +11,15 @@
 #include "xsa-ng-types.h"
 #include "xsa-nav.h"
 
+#include "memwatch.h"
+
 double deg2rad(double);
 double rad2deg(double);
 
 static d_XSAWorldPoint db_center;
-static node_navinfo* navlist = NULL;
+static NodeNAVInfo* navlist = NULL;
 
-void XSALoadNavRef(XPLMNavRef ref, navinfo_t* nav) {
+void XSALoadNavRef(XPLMNavRef ref, NAVInfo* nav) {
     XPLMGetNavAidInfo(
             ref,
             &nav->xplmType,
@@ -33,9 +34,10 @@ void XSALoadNavRef(XPLMNavRef ref, navinfo_t* nav) {
 
     nav->xsaType = xsaNavTypeUnknown;
 
+    const static char heli[] = "[H]";
+    const static char uss[] = "USS";
     switch (nav->xplmType) {
         case xplm_Nav_Airport:
-            const static char heli[] = "[H]";
             if (strncmp(heli, nav->name, strlen(heli)) == 0) {
                 nav->xsaType = xsaNavTypeHelipad;
                 break;
@@ -49,7 +51,7 @@ void XSALoadNavRef(XPLMNavRef ref, navinfo_t* nav) {
             break;
 
         case xplm_Nav_VOR:
-            const static char uss[] = "USS";
+
             if (strncmp(uss, nav->name, strlen(uss)) == 0) {
                 nav->xsaType = xsaNavTypeShip;
                 break;
@@ -93,14 +95,14 @@ void XSATouchNavDB(const d_XSAWorldPoint point) {
     static int report_alloc_link = 0;
 
     static XPLMNavRef navref_current = XPLM_NAV_NOT_FOUND;
-    static node_navinfo* ptr_navlist = NULL;
-    static navinfo_t navinfo;
+    static NodeNAVInfo* ptr_navlist = NULL;
+    static NAVInfo navinfo;
 
     static int id = 0;
 
     if (init) {
-        navlist = (node_navinfo*) malloc(sizeof (node_navinfo));
-        memset(navlist, 0, sizeof (node_navinfo));
+        navlist = (NodeNAVInfo*) malloc(sizeof (NodeNAVInfo));
+        memset(navlist, 0, sizeof (NodeNAVInfo));
         ptr_navlist = navlist;
         XPLMGetSystemPath(file_dlm);
         strcat(file_dlm, "xdata.dlm");
@@ -148,19 +150,19 @@ void XSATouchNavDB(const d_XSAWorldPoint point) {
 
         //		XPLMDebugString("ptr_navlist->node\n");
         if (!ptr_navlist->node) {
-            ptr_navlist->node = (navinfo_t*) malloc(sizeof (navinfo_t));
-            memset(ptr_navlist->node, 0, sizeof (navinfo_t));
+            ptr_navlist->node = (NAVInfo*) malloc(sizeof (NAVInfo));
+            memset(ptr_navlist->node, 0, sizeof (NAVInfo));
             report_alloc_node++;
         }
         //		XPLMDebugString("ptr_navlist->next\n");
         if (!ptr_navlist->next) {
-            ptr_navlist->next = (node_navinfo*) malloc(sizeof (node_navinfo));
-            memset(ptr_navlist->next, 0, sizeof (node_navinfo));
+            ptr_navlist->next = (NodeNAVInfo*) malloc(sizeof (NodeNAVInfo));
+            memset(ptr_navlist->next, 0, sizeof (NodeNAVInfo));
             report_alloc_link++;
             ptr_navlist->next->node = NULL;
         }
 
-        memset(&navinfo, 0, sizeof (navinfo_t));
+        memset(&navinfo, 0, sizeof (NAVInfo));
         id++;
         navinfo.dbid = id;
 
@@ -189,7 +191,7 @@ void XSATouchNavDB(const d_XSAWorldPoint point) {
             nav_point.lon = navinfo.lon;
             if (XSADistance(nav_point, db_center, 'N') < 50.0) {
                 //				XPLMDebugString("found navdb point\n");
-                memcpy(ptr_navlist->node, &navinfo, sizeof (navinfo_t));
+                memcpy(ptr_navlist->node, &navinfo, sizeof (NAVInfo));
                 report_load_dbnav++;
                 ptr_navlist = ptr_navlist->next;
                 // char s[1024];
@@ -242,7 +244,7 @@ void XSATouchNavDB(const d_XSAWorldPoint point) {
                 //					}
                 //				}
 
-                memcpy(ptr_navlist->node, &navinfo, sizeof (navinfo_t));
+                memcpy(ptr_navlist->node, &navinfo, sizeof (NAVInfo));
                 report_load_dbnav++;
                 ptr_navlist = ptr_navlist->next;
 
@@ -263,7 +265,7 @@ void XSATouchNavDB(const d_XSAWorldPoint point) {
     }
 }
 
-node_navinfo* XSAGetNavDBList() {
+NodeNAVInfo* XSAGetNavDBList() {
     return navlist;
 }
 

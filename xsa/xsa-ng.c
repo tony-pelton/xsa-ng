@@ -16,10 +16,7 @@
 #include "xsa-ng-render.h"
 #include "freeglut.h"
 
-//static XPLMHotKeyID details_hot_key_id = NULL;
-//static XPLMHotKeyID toggle_hot_key_id = NULL;
-
-extern XSAMenu_t XSAMenu;
+#include "memwatch.h"
 
 static struct {
     struct {
@@ -52,6 +49,8 @@ static struct {
     XPLMDataRef RunningTime;
 } dr;
 
+extern XSAMenu xsa_menu;
+
 static int list_count = 0;
 static bool debug_dump = false;
 
@@ -69,7 +68,7 @@ int XSADraw(XPLMDrawingPhase inPhase, int inIsBefore, void* inRefcon) {
     point.lat = dr.v.Lat;
     point.lon = dr.v.Lon;
     XSATouchNavDB(point);
-    if (XSAMenu.draw_flags) {
+    if (xsa_menu.draw_flags) {
         XSADrawNav();
 //        if(draw_state) { XSADrawState(); }
     }
@@ -97,7 +96,7 @@ void XSAUpdateState() {
 void XSADrawState() {
     char buf[512];
     strcpy(buf, "XSA-NG");
-    switch (XSAMenu.draw_flags) {
+    switch (xsa_menu.draw_flags) {
         case xsaNavTypeAirport:
             strcat(buf, " Airports");
             break;
@@ -117,7 +116,7 @@ void XSADrawState() {
             strcat(buf, " Terrain USGS");
             break;
     }
-    if (XSAMenu.detail_draw_flags != 0 && !(XSAMenu.draw_flags == xsaNavTypeFix)) {
+    if (xsa_menu.detail_draw_flags != 0 && !(xsa_menu.draw_flags == xsaNavTypeFix)) {
         strcat(buf, " (w/ Details)");
     }
     d_XSA3DPoint point;
@@ -132,7 +131,7 @@ void XSADrawNav() {
     double max_viz = (dr.v.Viz + XSA_NAUTICAL_MILE_METERS);
     double max_viz_nm = max_viz / XSA_NAUTICAL_MILE_METERS;
 
-    node_navinfo* p_nin = XSAGetNavDBList();
+    NodeNAVInfo* p_nin = XSAGetNavDBList();
 
     if (debug_dump) {
         XPLMDebugString("XSADrawNav() : fetched list\n");
@@ -143,11 +142,11 @@ void XSADrawNav() {
     while (p_nin->node != NULL) {
 
         list_count++;
-        navinfo_t* p_ni = p_nin->node;
+        NAVInfo* p_ni = p_nin->node;
         p_nin = p_nin->next;
 
 		// draw flag for this type on ?
-		if(!((p_ni->xsaType & XSAMenu.draw_flags) == p_ni->xsaType)) { continue; }
+		if(!((p_ni->xsaType & xsa_menu.draw_flags) == p_ni->xsaType)) { continue; }
 		
         if (debug_dump) {
             char s[1024];
@@ -242,25 +241,27 @@ void XSADrawNav() {
 
         XSARenderShapeDiamond(&gl_point);
 
-        if (p_ni->xsaType != xsaNavTypeFix && XSAMenu.detail_draw_flags != 0) {
+        if (p_ni->xsaType != xsaNavTypeFix && xsa_menu.detail_draw_flags != 0) {
             // nav name,nav id,frequency,distance etc ...
-            static char* buf = (char*) malloc(1024 * sizeof (unsigned char));
+            static char* buf = NULL;
+            if(!buf) { buf = (char*) malloc(1024 * sizeof (unsigned char)); }
             memset(buf, 0, 1024 * sizeof (unsigned char));
             // scratch
-            static char* bufbuf = (char*) malloc(5 * sizeof (char));
+            static char* bufbuf = NULL;
+            if(!bufbuf) { bufbuf = (char*) malloc(5 * sizeof (char)); }
 
-            if ((XSAMenu.detail_draw_flags & DETAILS_DRAW_NAME) == DETAILS_DRAW_NAME) {
+            if ((xsa_menu.detail_draw_flags & DETAILS_DRAW_NAME) == DETAILS_DRAW_NAME) {
                 strcat(buf, p_ni->name);
             }
 
-            if ((XSAMenu.detail_draw_flags & DETAILS_DRAW_ID) == DETAILS_DRAW_ID) {
+            if ((xsa_menu.detail_draw_flags & DETAILS_DRAW_ID) == DETAILS_DRAW_ID) {
                 if (strlen(buf) > 0) {
                     strcat(buf, " ");
                 }
                 strcat(buf, p_ni->id);
             }
 
-            if ((XSAMenu.detail_draw_flags & DETAILS_DRAW_DISTANCE) == DETAILS_DRAW_DISTANCE) {
+            if ((xsa_menu.detail_draw_flags & DETAILS_DRAW_DISTANCE) == DETAILS_DRAW_DISTANCE) {
                 if (strlen(buf) > 0) {
                     strcat(buf, " ");
                 }
@@ -312,7 +313,7 @@ PLUGIN_API int XPluginStart(char* outName, char* outSig, char* outDesc) {
 }
 
 PLUGIN_API void	XPluginStop(void) {
-	// Fortify_DumpAllMemory();
+//	 Fortify_DumpAllMemory();
 	// XPLMDebugString("xsa-ng XPluginStop()\n");
 	XSAMenuSave();
 }

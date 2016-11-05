@@ -12,9 +12,9 @@
 
 #include "xsa-ng-types.h"
 
-void XSALoadNavRef(XPLMNavRef ref,navinfo_t* nav);
+void XSALoadNavRef(XPLMNavRef ref,NAVInfo* nav);
 void XSATouchNavDB(const d_XSAWorldPoint point);
-node_navinfo* XSAGetNavDBList();
+NodeNAVInfo* XSAGetNavDBList();
 double XSADistance(const d_XSAWorldPoint point1, const d_XSAWorldPoint point2, char unit);
 void XSAPointOnBearingFromPoint(d_XSAWorldPoint* out,const d_XSAWorldPoint source,double bearing,double d);
 

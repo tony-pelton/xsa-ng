@@ -11,7 +11,7 @@
 
 #define XSA_NAUTICAL_MILE_METERS 1852
 
-enum _xsaNavType {
+typedef enum XSANavType_t {
 	xsaNavTypeUnknown = 1, // 2^^0
 	xsaNavTypeAirport = 2, // 2^^1
 	xsaNavTypeVOR = 4, // 2^^2
@@ -23,11 +23,11 @@ enum _xsaNavType {
 	xsaNavTypeUSGSTerrain = 256,
 	xsaNavTypeUSGSCivil = 512,
 	xsaNavTypeUSGSMunicipal = 1024
-};
+} XSANavType;
 
-typedef _xsaNavType XSANavType;
+typedef struct NAVInfo_t NAVInfo;
 
-typedef struct {
+struct NAVInfo_t {
 	int dbid;
 	XPLMNavRef ref;
 	XSANavType xsaType;
@@ -38,16 +38,18 @@ typedef struct {
 	int frequency;
 	char id[32];
 	char name[256];
-} navinfo_t;
-
-struct _node_navinfo;
-typedef _node_navinfo node_navinfo;
-struct _node_navinfo {
-	navinfo_t* node;
-	node_navinfo* next;
 };
 
-typedef struct {
+typedef struct NodeNAVInfo_t NodeNAVInfo;
+
+struct NodeNAVInfo_t {
+	NAVInfo* node;
+	NodeNAVInfo* next;
+};
+
+typedef struct d_XSA3DPoint_t d_XSA3DPoint;
+
+struct d_XSA3DPoint_t {
   double x;
   double y;
   double z;
@@ -55,12 +57,14 @@ typedef struct {
   double r;
   double g;
   double b;
-} d_XSA3DPoint;
+};
 
-typedef struct {
+typedef struct d_XSAWorldPoint_t d_XSAWorldPoint;
+
+struct d_XSAWorldPoint_t {
   double lat;
   double lon;
   double height;
-} d_XSAWorldPoint;
+};
 
 #endif	/* _XSA_NG_TYPES_H */

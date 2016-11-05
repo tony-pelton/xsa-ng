@@ -2,14 +2,14 @@ CC+ = g++
 CC = gcc
 #
 # XPLOBJ  = xsa-ng.o xsa-ng-render.o xsa-nav.o xsa-menu.o fortify.o freeglut_font.o freeglut_stroke_mono_roman.o freeglut_stroke_roman.o sqlite3.o
-XPLOBJ  = xsa-ng.o xsa-ng-render.o xsa-nav.o xsa-menu.o freeglut_font.o freeglut_stroke_mono_roman.o freeglut_stroke_roman.o
+XPLOBJ  = xsa-ng.o xsa-ng-render.o xsa-nav.o xsa-menu.o freeglut_font.o freeglut_stroke_mono_roman.o freeglut_stroke_roman.o memwatch.o
 XPLBIN  = xsa-ng-win.xpl
 XPLLIBS = -lXPLM_64 -lopengl32
 XPLLIBSDIR = -L /c/XPSDK213/SDK/Libraries/Win/
 XPLINCS = -I /c/XPSDK213/SDK/CHeaders/XPLM/ -I ./sqlite
 XPLDEF = xsa-ng.def
 #
-CFLAGS = -Wall -O2 $(XPLINCS) -s -DIBM=1 -DAPL=0 -DLIN=0
+CFLAGS = -Wall -O2 $(XPLINCS) -s -DIBM=1 -DAPL=0 -DLIN=0 -DMEMWATCH=0
 INSTALL_DIR = "/c/Program Files (x86)/Steam/SteamApps/common/X-Plane 10/Resources/plugins"
 
 all: $(XPLBIN)
@@ -25,26 +25,29 @@ uninstall:
 	rm -f $(INSTALL_DIR)/$(XPLBIN)
 
 $(XPLBIN): $(XPLOBJ)
-	$(CC+) -static -static-libgcc -static-libstdc++ -shared -o $(XPLBIN) -Wl,--out-implib,$(XPLBIN) $(XPLOBJ) $(XPLLIBS) $(XPLLIBSDIR)
+	$(CC) -static -static-libgcc -shared -o $(XPLBIN) -Wl,--out-implib,$(XPLBIN) $(XPLOBJ) $(XPLLIBS) $(XPLLIBSDIR)
 	# strip $(XPLBIN)
 
-xsa-ng.o: xsa-ng.cpp
-	$(CC+) -c xsa-ng.cpp -o xsa-ng.o $(CFLAGS)
+xsa-ng.o: xsa-ng.c
+	$(CC) -c xsa-ng.c -o xsa-ng.o $(CFLAGS)
 
-xsa-ng-render.o: xsa-ng-render.cpp
-	$(CC+) -c xsa-ng-render.cpp -o xsa-ng-render.o $(CFLAGS)
+xsa-ng-render.o: xsa-ng-render.c
+	$(CC) -c xsa-ng-render.c -o xsa-ng-render.o $(CFLAGS)
 
-xsa-nav.o: xsa-nav.cpp
-	$(CC+) -c xsa-nav.cpp -o xsa-nav.o $(CFLAGS)
+xsa-nav.o: xsa-nav.c
+	$(CC) -c xsa-nav.c -o xsa-nav.o $(CFLAGS)
 
-xsa-menu.o: xsa-menu.cpp
-	$(CC+) -c xsa-menu.cpp -o xsa-menu.o $(CFLAGS)
+xsa-menu.o: xsa-menu.c
+	$(CC) -c xsa-menu.c -o xsa-menu.o $(CFLAGS)
 
 # fortify.o: fortify.cpp
 	# $(CC+) -c fortify.cpp -o fortify.o $(CFLAGS)
 
+memwatch.o: memwatch.c
+	$(CC) -c memwatch.c -o memwatch.o $(CFLAGS)
+
 freeglut_font.o: freeglut_font.c
-	$(CC+) -c freeglut_font.c -o freeglut_font.o $(CFLAGS)
+	$(CC) -c freeglut_font.c -o freeglut_font.o $(CFLAGS)
 
 freeglut_stroke_mono_roman.o: freeglut_stroke_mono_roman.c
 	$(CC) -c freeglut_stroke_mono_roman.c -o freeglut_stroke_mono_roman.o $(CFLAGS)

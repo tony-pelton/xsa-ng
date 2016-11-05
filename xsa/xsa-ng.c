@@ -283,7 +283,7 @@ void XSADrawNav() {
 }
 
 PLUGIN_API int XPluginStart(char* outName, char* outSig, char* outDesc) {
-	// XPLMDebugString("xsa-ng XPluginStart()\n");
+	 XPLMDebugString("xsa-ng XPluginStart()\n");
     strcpy(outName, "xsa-ng");
     strcpy(outSig, "com.dsrts.xsa-ng");
     strcpy(outDesc, "XSA-NG (tpelton@gmail.com) built : " __DATE__);
@@ -304,27 +304,28 @@ PLUGIN_API int XPluginStart(char* outName, char* outSig, char* outDesc) {
     //	details_hot_key_id = XPLMRegisterHotKey(XPLM_VK_F12,xplm_DownFlag,"Toggle Details",key,&details_hot_key_id);
     //	toggle_hot_key_id = XPLMRegisterHotKey(XPLM_VK_F11,xplm_DownFlag,"Toggle Type",key,&toggle_hot_key_id);
 
-    XPLMRegisterDrawCallback(XSADraw, xplm_Phase_Objects, 0, NULL);
-
     XSARenderInit();
     XSAMenuInit();
+    XSANavDBInit();
 
     return 1;
 }
 
 PLUGIN_API void	XPluginStop(void) {
-//	 Fortify_DumpAllMemory();
-	// XPLMDebugString("xsa-ng XPluginStop()\n");
+	XPLMDebugString("xsa-ng XPluginStop()\n");
 	XSAMenuSave();
+	XSANavDBShutdown();
 }
 
 PLUGIN_API int XPluginEnable(void) {
-	// XPLMDebugString("xsa-ng XPluginEnable()\n");
+	XPLMDebugString("xsa-ng XPluginEnable()\n");
+    XPLMRegisterDrawCallback(XSADraw, xplm_Phase_Objects, 0, NULL);
 	return 1;
 }
 
 PLUGIN_API void XPluginDisable(void) {
-	// XPLMDebugString("xsa-ng XPluginDisable()\n");
+	XPLMDebugString("xsa-ng XPluginDisable()\n");
+    XPLMUnregisterDrawCallback(XSADraw, xplm_Phase_Objects, 0, NULL);
 }
 
 PLUGIN_API void XPluginReceiveMessage(XPLMPluginID inFromWho, long inMessage, void* inParam) {

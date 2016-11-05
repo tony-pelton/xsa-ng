@@ -9,7 +9,7 @@ XPLLIBSDIR = -L /c/XPSDK213/SDK/Libraries/Win/
 XPLINCS = -I /c/XPSDK213/SDK/CHeaders/XPLM/ -I ./sqlite
 XPLDEF = xsa-ng.def
 #
-CFLAGS = -Wall -O2 $(XPLINCS) -s -DIBM=1 -DAPL=0 -DLIN=0 -DMEMWATCH=0
+CFLAGS = -Wall -O2 $(XPLINCS) -s -DIBM=1 -DAPL=0 -DLIN=0 -DMEMWATCH
 INSTALL_DIR = "/c/Program Files (x86)/Steam/SteamApps/common/X-Plane 10/Resources/plugins"
 
 all: $(XPLBIN)

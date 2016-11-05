@@ -12,6 +12,8 @@
 
 #include "xsa-ng-types.h"
 
+void XSANavDBInit();
+void XSANavDBShutdown();
 void XSALoadNavRef(XPLMNavRef ref,NAVInfo* nav);
 void XSATouchNavDB(const d_XSAWorldPoint point);
 NodeNAVInfo* XSAGetNavDBList();

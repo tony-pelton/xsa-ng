@@ -17,7 +17,43 @@ double deg2rad(double);
 double rad2deg(double);
 
 static d_XSAWorldPoint db_center;
+
+// the list
 static NodeNAVInfo* navlist = NULL;
+// a pointer into the list
+static NodeNAVInfo* ptr_navlist = NULL;
+// usgs data file pointer
+static FILE *f = NULL;
+
+void XSANavDBInit() {
+    navlist = (NodeNAVInfo*) malloc(sizeof (NodeNAVInfo));
+    memset(navlist, 0, sizeof (NodeNAVInfo));
+    ptr_navlist = navlist;
+    char file_dlm[1024];
+    XPLMGetSystemPath(file_dlm);
+    strcat(file_dlm, "xdata.dlm");
+    f = fopen(file_dlm, "r");
+    if (!f) {
+        XPLMDebugString("xdata.dlm file not found.\n");
+    }
+    XPLMDebugString("XSANavDBInit()\n");
+}
+
+void XSANavDBShutdown() {
+    NodeNAVInfo* ptr = navlist;
+    while(ptr) {
+        NodeNAVInfo* next = ptr->next;
+        free(ptr->node);
+        free(ptr);
+        ptr = next;
+    }
+    navlist = NULL;
+    ptr_navlist = NULL;
+    if(f) {
+        fclose(f);
+    }
+    f = NULL;
+}
 
 void XSALoadNavRef(XPLMNavRef ref, NAVInfo* nav) {
     XPLMGetNavAidInfo(
@@ -80,12 +116,9 @@ void XSALoadNavRef(XPLMNavRef ref, NAVInfo* nav) {
 }
 
 void XSATouchNavDB(const d_XSAWorldPoint point) {
+
     static const char delim[] = "|";
 
-    static FILE *f = NULL;
-    static char file_dlm[1024];
-
-    static bool init = true;
     static bool nav_db_load = false;
     static bool usgs_db_load = false;
 
@@ -95,24 +128,10 @@ void XSATouchNavDB(const d_XSAWorldPoint point) {
     static int report_alloc_link = 0;
 
     static XPLMNavRef navref_current = XPLM_NAV_NOT_FOUND;
-    static NodeNAVInfo* ptr_navlist = NULL;
+
     static NAVInfo navinfo;
 
     static int id = 0;
-
-    if (init) {
-        navlist = (NodeNAVInfo*) malloc(sizeof (NodeNAVInfo));
-        memset(navlist, 0, sizeof (NodeNAVInfo));
-        ptr_navlist = navlist;
-        XPLMGetSystemPath(file_dlm);
-        strcat(file_dlm, "xdata.dlm");
-        f = fopen(file_dlm, "r");
-        if (!f) {
-            XPLMDebugString("xdata.dlm file not found.\n");
-        }
-        init = false;
-        XPLMDebugString("init()\n");
-    }
 
     if (XSADistance(point, db_center, 'N') > 30.0) {
         XPLMDebugString("XSATouchNavDB : (re)set center\n");
@@ -208,7 +227,7 @@ void XSATouchNavDB(const d_XSAWorldPoint point) {
                 // close things up
                 fseek(f, 0, SEEK_SET);
                 usgs_db_load = false;
-                XPLMDebugString("nav_db_load done.\n");
+                XPLMDebugString("usgs_db_load done.\n");
                 continue;
             }
             s[strlen(s) - 1] = '\0';
